@@ -5,6 +5,7 @@ import { AnimatePresence, m, useReducedMotion } from 'motion/react';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import {
   ArrowLeft,
+  ArrowRight,
   Bell,
   Check,
   ChevronDown,
@@ -38,7 +39,7 @@ const cx = (...parts) => parts.filter(Boolean).join(' ');
 // ---------- icons (one stroke weight, currentColor, mirrored under RTL when direction-bearing) ----------
 const ICONS = {
   back: { glyph: ArrowLeft, flip: true },
-  next: { glyph: ArrowLeft, flip: true },
+  next: { glyph: ArrowRight, flip: true },
   check: { glyph: Check },
   copy: { glyph: Copy },
   eye: { glyph: Eye },
@@ -322,22 +323,7 @@ export const Range = ({ from, to }) => (
 
 // ---------- progress ----------
 export function Bar({ value = 0, label, className = '' }) {
-  const [filled, setFilled] = useState(false);
   const pct = Math.min(100, Math.max(0, Number(value) || 0));
-
-  useEffect(() => {
-    let frameId;
-    let innerFrameId;
-    frameId = requestAnimationFrame(() => {
-      innerFrameId = requestAnimationFrame(() => {
-        setFilled(true);
-      });
-    });
-    return () => {
-      cancelAnimationFrame(frameId);
-      cancelAnimationFrame(innerFrameId);
-    };
-  }, []);
 
   return (
     <div
@@ -348,12 +334,17 @@ export function Bar({ value = 0, label, className = '' }) {
       aria-valuemax={100}
       aria-label={label}
     >
-      <div
+      <m.div
         className="bar-fill"
-        style={{ width: filled ? `${pct}%` : '0%' }}
+        initial={{ width: '0%' }}
+        animate={{ width: `${pct}%` }}
+        transition={{
+          duration: 1.4,
+          ease: [0.22, 1, 0.36, 1],
+        }}
       >
-        <span className="bar-glow" aria-hidden="true" />
-      </div>
+        {pct > 0 && <span className="bar-glow" aria-hidden="true" />}
+      </m.div>
     </div>
   );
 }
@@ -989,7 +980,7 @@ export function Gantt({ phases, start, end }) {
               style={{ insetInlineStart: `${((t(p.start_date) - min) / span) * 100}%`, width: `${((t(p.end_date) - t(p.start_date)) / span) * 100}%` }}
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}
-              transition={{ duration: 0.5, ease: EASE_OUT, delay: 0.08 + i * 0.05 }}
+              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.08 + i * 0.05 }}
               title={`${p.start_date} – ${p.end_date}`}
             />
           </div>
