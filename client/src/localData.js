@@ -39,6 +39,59 @@ export function isAdminEmail(email) {
   );
 }
 
+export function defaultProjectSections(projectName = 'المشروع') {
+  return [
+    {
+      id: 'overview',
+      title: 'نظرة عامة على المشروع',
+      subtitle: 'ملخص الأهداف والنطاق الأساسي',
+      content: `يهدف مشروع «${projectName}» إلى تقديم تجربة رقمية استثنائية متكاملة تعكس هوية العلامة التجارية، مع التركيز على سرعة التصفح وتجربة المستخدم السلسة وسهولة الوصول لكافة الخدمات والمنتجات.`,
+    },
+    {
+      id: 'requirements',
+      title: 'المتطلبات الفنية والمواصفات',
+      subtitle: 'المعايير التقنية والبنية التحتية',
+      content: 'توافق كامل مع مختلف المتصفحات والأجهزة الذكية، دعم واجهة عربية RTL أصيلة، سرعة تحميل متقدمة (Core Web Vitals)، وحماية أمنية معتمدة لبيانات العملاء.',
+    },
+    {
+      id: 'features',
+      title: 'الميزات والوظائف الأساسية',
+      subtitle: 'الوحدات البرمجية والخدمات التفاعلية',
+      content: 'نظام إدارة محتوى مرن، بوابات دفع إلكترونية متعددة وآمنة، تكامل مباشر مع خدمات الشحن وتتبع الطلبات، وتنبيهات فورية للمستخدمين عبر البريد الإلكتروني.',
+    },
+    {
+      id: 'design_ui',
+      title: 'الهوية البصرية وتصميم الواجهة (UI/UX)',
+      subtitle: 'التوجه الفني وتجربة الاستخدام',
+      content: 'تصميم مخصص يعتمد على هوية دار شذرة (الأخضر النباتي العميق #2C6852، الذهب الدافئ #DAB272، والبيج الرملي)، مع خط الإسكندرية العربي المتناسق وأيقونات انسيابية راقية.',
+    },
+    {
+      id: 'deliverables',
+      title: 'المخرجات والتسليمات النهائية',
+      subtitle: 'الأصول البرمجية وحزم الإطلاق',
+      content: 'الكود المصدري الكامل للمشروع، ملفات التصميم الأصلية، لوحة تحكم إدارية متكاملة، ودليل استخدام وتشغيل النظام.',
+    },
+    {
+      id: 'timeline',
+      title: 'الجدول الزمني ومراحل الإطلاق',
+      subtitle: 'المحطات الرئيسية للعمل والتدشين',
+      content: 'المرحلة 1: جمع المتطلبات والتخطيط (مكتملة).\nالمرحلة 2: التصميم وبناء النماذج التفاعلية (جارية).\nالمرحلة 3: التطوير البرمجي والربط التقني.\nالمرحلة 4: الاختبار ومراجعة الجودة.\nالمرحلة 5: التدشين والإطلاق الرسمي.',
+    },
+    {
+      id: 'files',
+      title: 'الملفات والمرفقات الرسمية',
+      subtitle: 'المستندات والروابط المرجعية',
+      content: 'عقد المشروع المعتمد، وثيقة متطلبات النظام، وروابط النماذج الأولية المعتمدة.',
+    },
+    {
+      id: 'notes',
+      title: 'ملاحظات إضافية وتوصيات الإطلاق',
+      subtitle: 'إرشادات الفريق وتوصيات الصيانة',
+      content: 'يوصى بتجهيز النطاق الرسمي (Domain) وشهادة الأمان SSL وحسابات بوابات الدفع قبل موعد الإطلاق بأسبوع لضمان فحص المعاملات الحية.',
+    },
+  ];
+}
+
 function resetCode() {
   const values = new Uint32Array(1);
   if (globalThis.crypto?.getRandomValues) globalThis.crypto.getRandomValues(values);
@@ -105,7 +158,7 @@ function confirmPasswordReset(state, role, body) {
 }
 
 function seedDemoProject(state) {
-  if ((state.demoContentVersion >= 4 && state.clients?.length >= 4) || !state.clients?.some((client) => client.id === 'demo-client')) return false;
+  if (state.demoContentVersion >= 4 || !state.clients?.some((client) => client.id === 'demo-client')) return false;
 
   const client = state.clients.find((row) => row.id === 'demo-client');
   if (client.name === 'عميل تجريبي' || client.name === 'دار سُدرة') client.name = 'دار شذرة';
@@ -238,84 +291,74 @@ function seedDemoProject(state) {
     }
   });
 
-  // Additional mock clients for the Admin portal
-  const mockClients = [
-    {
-      id: 'client-scents',
-      username: 'shathrah-scents',
-      name: 'شذرة هوم للشموع والعطور',
-      project_name: 'خط إنتاج الشموع العطرية الفاخرة',
-      contact_name: 'ريم القحطاني',
-      email: 'reem@shathrah.test',
-      telegram_chat: '@reem_shathrah',
-      start_date: relativeDate(-20),
-      end_date: relativeDate(15),
-      progress: 75,
-      health: 'ok',
-      current_phase: 'التطوير والتغليف',
-      open_requests: 0,
-      waiting_comments: 0,
-      notify_email: true,
-      notify_telegram: false,
-      created_at: relativeTimestamp(-20),
-    },
-    {
-      id: 'client-ceramics',
-      username: 'shathrah-ceramics',
-      name: 'أواني شذرة الخزفية',
-      project_name: 'مجموعة المائدة الخزفية الحرفية',
-      contact_name: 'عبدالله التميمي',
-      email: 'ceramics@shathrah.test',
-      telegram_chat: '',
-      start_date: relativeDate(-10),
-      end_date: relativeDate(40),
-      progress: 30,
-      health: 'wait',
-      current_phase: 'التصميم والنماذج',
-      open_requests: 2,
-      waiting_comments: 1,
-      notify_email: false,
-      notify_telegram: false,
-      created_at: relativeTimestamp(-10),
-    },
-    {
-      id: 'client-gifting',
-      username: 'shathrah-gifting',
-      name: 'صناديق هدايا دار شذرة',
-      project_name: 'كتالوج هدايا المناسبات والمواسم',
-      contact_name: 'نورة السبيعي',
-      email: 'gifting@shathrah.test',
-      telegram_chat: '@noura_gifts',
-      start_date: relativeDate(-35),
-      end_date: relativeDate(-2),
-      progress: 95,
-      health: 'ok',
-      current_phase: 'التسليم والتدشين',
-      open_requests: 0,
-      waiting_comments: 0,
-      notify_email: true,
-      notify_telegram: true,
-      created_at: relativeTimestamp(-35),
-    },
-  ];
+  // Projects and inline comments for real project management
+  state.projects ||= [];
+  state.inline_comments ||= [];
 
-  mockClients.forEach((mc) => {
-    if (!state.clients.some((existing) => existing.id === mc.id)) {
-      state.clients.push(mc);
-      // Seed phases for extra client
-      DEFAULT_PHASES.forEach((pName, pIdx) => {
-        state.phases.push({
-          id: `phase-${mc.id}-${pIdx + 1}`,
-          client_id: mc.id,
-          name: pName,
-          sort: pIdx,
-          status: pIdx < 2 ? 'done' : pIdx === 2 ? 'current' : 'next',
-          start_date: relativeDate(-15 + pIdx * 8),
-          end_date: relativeDate(-15 + (pIdx + 1) * 8),
-        });
+  if (!state.projects.some((p) => p.client_id === client.id)) {
+    const demoProject = {
+      id: 'project-demo-shathrah',
+      client_id: client.id,
+      name: 'هوية ومتجر دار شذرة الفاخر',
+      description: 'منصة تسوق رقمية راقية ومتجر إلكتروني فاخر لمنتجات دار شذرة الطبيعية والعطور الحرفية مع بوابات دفع آمنة وتجربة تصفح موشاة بالذهب الدافئ.',
+      production_url: 'https://shathrah.test',
+      status: 'in_progress',
+      progress: 42,
+      start_date: relativeDate(-14),
+      end_date: relativeDate(30),
+      created_at: relativeTimestamp(-14),
+      updated_at: relativeTimestamp(-1),
+      sections: defaultProjectSections('هوية ومتجر دار شذرة الفاخر'),
+    };
+    state.projects.push(demoProject);
+
+    if (!state.inline_comments.some((c) => c.project_id === demoProject.id)) {
+      state.inline_comments.push({
+        id: 'ic-demo-1',
+        project_id: demoProject.id,
+        section_id: 'design_ui',
+        client_id: client.id,
+        author: 'client',
+        author_name: client.contact_name || 'سارة العبدالله',
+        author_role: 'client',
+        content: 'نود التأكد من ظهور شعار دار شذرة الذهبي بحجم واضح ومتناسق في الشريط العلوي للمتجر على شاشات الجوال.',
+        status: 'resolved',
+        created_at: relativeTimestamp(-2, 14),
+        replies: [
+          {
+            id: 'reply-demo-1',
+            author: 'admin',
+            author_name: 'فريق دار شذرة',
+            author_role: 'admin',
+            content: 'تم اعتماد الملاحظة وتحديث قياس الشعار ليكون بارزاً وأنيقاً في نسخة الهاتف.',
+            created_at: relativeTimestamp(-1, 16),
+          },
+        ],
+      });
+      state.inline_comments.push({
+        id: 'ic-demo-2',
+        project_id: demoProject.id,
+        section_id: 'features',
+        client_id: client.id,
+        author: 'client',
+        author_name: client.contact_name || 'سارة العبدالله',
+        author_role: 'client',
+        content: 'هل يمكن إضافة خيار تغليف الهدايا الفاخر مع بطاقة إهداء مخصصة في مرحلة الدفع وسلة الشراء؟',
+        status: 'in_progress',
+        created_at: relativeTimestamp(-1, 11),
+        replies: [
+          {
+            id: 'reply-demo-2',
+            author: 'admin',
+            author_name: 'فريق دار شذرة',
+            author_role: 'admin',
+            content: 'فكرة ممتازة جداً وتتناسب مع هوية دار شذرة. جاري إضافة ميزة كرت الإهداء وصناديق التغليف المخملية ضمن خيارات الدفع.',
+            created_at: relativeTimestamp(-1, 13),
+          },
+        ],
       });
     }
-  });
+  }
 
   state.comments ||= [];
   const demoComments = [
@@ -422,6 +465,8 @@ function createInitialState() {
       created_at: now,
     }],
     comments: [],
+    projects: [],
+    inline_comments: [],
     notifications: [{
       id: 'notification-1',
       client_id: clientId,
@@ -455,7 +500,28 @@ export function readState() {
     }
     state.auth.clients ||= {};
     state.auth.accounts ||= {};
+    if (!state.auth.accounts['client@example.test']) {
+      state.auth.accounts['client@example.test'] = { email: 'client@example.test', password: 'client123', clientId: 'demo-client' };
+      migrated = true;
+    }
     state.auth.passwordResets ||= {};
+    state.projects ||= [];
+    state.inline_comments ||= [];
+    // Clean up legacy mock clients from previous versions
+    const fakeClientIds = new Set(['client-scents', 'client-ceramics', 'client-gifting']);
+    if (state.clients?.some((c) => fakeClientIds.has(c.id))) {
+      state.clients = state.clients.filter((c) => !fakeClientIds.has(c.id));
+      state.phases = (state.phases || []).filter((p) => !fakeClientIds.has(p.client_id));
+      state.items = (state.items || []).filter((i) => !fakeClientIds.has(i.client_id));
+      state.updates = (state.updates || []).filter((u) => !fakeClientIds.has(u.client_id));
+      state.requests = (state.requests || []).filter((r) => !fakeClientIds.has(r.client_id));
+      state.files = (state.files || []).filter((f) => !fakeClientIds.has(f.client_id));
+      state.comments = (state.comments || []).filter((c) => !fakeClientIds.has(c.client_id));
+      for (const fakeId of fakeClientIds) {
+        delete state.auth.clients[fakeId];
+      }
+      migrated = true;
+    }
     if (seedDemoProject(state)) migrated = true;
     for (const client of state.clients ?? []) {
       const credentials = state.auth.clients[client.id];
@@ -491,7 +557,11 @@ export function readState() {
     for (const client of state.clients ?? []) {
       if (client.name === 'شركة النور') { client.name = 'عميل تجريبي'; renamed = true; }
     }
-    if (renamed || migrated) saveState(state);
+    if (renamed || migrated) {
+      try {
+        saveState(state);
+      } catch {}
+    }
     return state;
   } catch {
     throw new Error('تعذر قراءة البيانات المحلية. امسح بيانات الموقع من المتصفح للبدء من جديد.');
@@ -628,8 +698,26 @@ function clientOverview(state, client) {
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
     .slice(0, 10)
     .reverse();
+  const clientProjects = (state.projects || [])
+    .filter((p) => p.client_id === client.id)
+    .map((p) => {
+      const comments = (state.inline_comments || []).filter((c) => c.project_id === p.id);
+      return {
+        ...p,
+        comment_count: comments.length,
+        open_comment_count: comments.filter((c) => c.status !== 'resolved').length,
+      };
+    })
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+  const recentComments = (state.inline_comments || [])
+    .filter((c) => c.client_id === client.id)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .slice(0, 5);
+
   return {
     client,
+    projects: clientProjects,
+    recentComments,
     phases,
     requests: state.requests.filter((row) => row.client_id === client.id),
     updates: updates.slice(0, 3),
@@ -715,7 +803,7 @@ export async function localData(path, { method = 'GET', body = {} } = {}) {
   }
   if (route === 'admin/login' && method === 'POST') {
     const norm = normalizeEmail(body.email);
-    const adminEmail = normalizeEmail(state.auth.admin.email);
+    const adminEmail = normalizeEmail(state.auth?.admin?.email || 'admin@example.test');
     const validEmail = norm === adminEmail || norm === 'admin@example.test' || norm === 'admin@example.com' || norm.startsWith('admin@') || norm === 'admin';
     const validPassword = body.password === state.auth.admin.password;
     if (!validEmail || !validPassword) {
@@ -813,10 +901,201 @@ export async function localData(path, { method = 'GET', body = {} } = {}) {
       });
       saveState(state);
       result = { ok: true };
+    } else if (route === 'client/projects' && method === 'GET') {
+      result = (state.projects || [])
+        .filter((p) => p.client_id === clientId)
+        .map((p) => {
+          const comments = (state.inline_comments || []).filter((c) => c.project_id === p.id);
+          return {
+            ...p,
+            comment_count: comments.length,
+            open_comment_count: comments.filter((c) => c.status !== 'resolved').length,
+          };
+        })
+        .sort((a, b) => b.created_at.localeCompare(a.created_at));
+    } else if (parts[1] === 'projects' && parts.length === 3 && method === 'GET') {
+      const project = (state.projects || []).find((p) => p.id === parts[2] && p.client_id === clientId);
+      if (!project) fail('المشروع غير موجود أو غير مصرح لك بالوصول إليه', 404);
+      const comments = (state.inline_comments || [])
+        .filter((c) => c.project_id === project.id)
+        .sort((a, b) => b.created_at.localeCompare(a.created_at));
+      result = { project, comments };
+    } else if (parts[1] === 'projects' && parts.length === 4 && parts[3] === 'comments' && method === 'POST') {
+      const project = (state.projects || []).find((p) => p.id === parts[2] && p.client_id === clientId);
+      if (!project) fail('المشروع غير موجود أو غير مصرح لك بالوصول إليه', 404);
+      const sectionId = String(body.section_id || '').trim();
+      const content = String(body.content || '').trim();
+      if (!sectionId) fail('حدد القسم المراد التعليق عليه', 400);
+      if (!content) fail('اكتب نص الملاحظة أو الاستفسار', 400);
+      const sectionExists = (project.sections || []).some((s) => s.id === sectionId);
+      if (!sectionExists) fail('القسم المحدد غير موجود في المشروع', 400);
+      const newComment = {
+        id: id(),
+        project_id: project.id,
+        section_id: sectionId,
+        client_id: clientId,
+        author: 'client',
+        author_name: client.contact_name || client.name || 'العميل',
+        author_role: 'client',
+        content,
+        status: 'open',
+        created_at: timestamp(),
+        replies: [],
+      };
+      state.inline_comments ||= [];
+      state.inline_comments.push(newComment);
+      saveState(state);
+      result = newComment;
+    } else if (parts[1] === 'projects' && parts[3] === 'comments' && parts[5] === 'reply' && method === 'POST') {
+      const project = (state.projects || []).find((p) => p.id === parts[2] && p.client_id === clientId);
+      if (!project) fail('المشروع غير موجود', 404);
+      const comment = (state.inline_comments || []).find((c) => c.id === parts[4] && c.project_id === project.id);
+      if (!comment) fail('الملاحظة غير موجودة', 404);
+      const content = String(body.content || '').trim();
+      if (!content) fail('اكتب نص الرد', 400);
+      const reply = {
+        id: id(),
+        author: 'client',
+        author_name: client.contact_name || client.name || 'العميل',
+        author_role: 'client',
+        content,
+        created_at: timestamp(),
+      };
+      comment.replies ||= [];
+      comment.replies.push(reply);
+      if (comment.status === 'resolved') comment.status = 'open';
+      saveState(state);
+      result = reply;
     }
   } else if (parts[0] === 'admin') {
     requireAdmin(state);
     if (route === 'admin/me' && method === 'GET') result = { ok: true };
+    else if (route === 'admin/projects' && method === 'GET') {
+      result = (state.projects || []).map((p) => {
+        const client = state.clients.find((c) => c.id === p.client_id);
+        const comments = (state.inline_comments || []).filter((c) => c.project_id === p.id);
+        return {
+          ...p,
+          client_name: client?.name || 'غير معروف',
+          client_email: client?.email || '',
+          contact_name: client?.contact_name || '',
+          comment_count: comments.length,
+          open_comment_count: comments.filter((c) => c.status !== 'resolved').length,
+        };
+      }).sort((a, b) => b.created_at.localeCompare(a.created_at));
+    } else if (route === 'admin/projects' && method === 'POST') {
+      const name = String(body.name || '').trim();
+      const productionUrl = String(body.production_url || '').trim();
+      const clientId = String(body.client_id || '').trim();
+      if (!name) fail('اسم المشروع مطلوب');
+      if (!productionUrl || !/^https?:\/\//i.test(productionUrl)) fail('أدخل رابط موقع حي صحيح يبدأ بـ https:// أو http://');
+      const targetClient = state.clients.find((c) => c.id === clientId);
+      if (!targetClient) fail('العميل المحدد غير موجود');
+      const newProjectId = id();
+      const newProject = {
+        id: newProjectId,
+        client_id: targetClient.id,
+        name,
+        description: String(body.description || '').trim() || `مشروع ${name} المخصص لشركة ${targetClient.name}`,
+        production_url: productionUrl,
+        status: body.status || 'in_progress',
+        progress: Math.max(0, Math.min(100, Number.parseInt(body.progress, 10) || 0)),
+        start_date: body.start_date || relativeDate(0),
+        end_date: body.end_date || relativeDate(30),
+        created_at: timestamp(),
+        updated_at: timestamp(),
+        sections: defaultProjectSections(name),
+      };
+      state.projects ||= [];
+      state.projects.push(newProject);
+      addNotification(state, targetClient.id, {
+        type: 'phase',
+        text: `تم تدشين مشروعك الجديد «${name}» - يمكنك الآن معاينته وإبداء الملاحظات`,
+        href: `/portal/projects/${newProjectId}`,
+        ref_id: newProjectId,
+      });
+      saveState(state);
+      result = { ok: true, id: newProjectId, project: newProject };
+    } else if (parts[1] === 'projects' && parts.length === 3 && method === 'GET') {
+      const project = (state.projects || []).find((p) => p.id === parts[2]);
+      if (!project) fail('المشروع غير موجود', 404);
+      const client = state.clients.find((c) => c.id === project.client_id);
+      const comments = (state.inline_comments || [])
+        .filter((c) => c.project_id === project.id)
+        .sort((a, b) => b.created_at.localeCompare(a.created_at));
+      result = { project, client, comments };
+    } else if (parts[1] === 'projects' && parts.length === 3 && method === 'PATCH') {
+      const project = (state.projects || []).find((p) => p.id === parts[2]);
+      if (!project) fail('المشروع غير موجود', 404);
+      if (body.name !== undefined) {
+        const name = String(body.name || '').trim();
+        if (!name) fail('اسم المشروع مطلوب');
+        project.name = name;
+      }
+      if (body.production_url !== undefined) {
+        const url = String(body.production_url || '').trim();
+        if (!/^https?:\/\//i.test(url)) fail('رابط الإنتاج يجب أن يبدأ بـ https:// أو http://');
+        project.production_url = url;
+      }
+      if (body.client_id !== undefined) {
+        const targetClient = state.clients.find((c) => c.id === body.client_id);
+        if (!targetClient) fail('العميل المحدد غير موجود');
+        project.client_id = targetClient.id;
+      }
+      if (body.description !== undefined) project.description = String(body.description || '').trim();
+      if (body.status !== undefined) project.status = body.status;
+      if (body.progress !== undefined) project.progress = Math.max(0, Math.min(100, Number.parseInt(body.progress, 10) || 0));
+      if (body.start_date !== undefined) project.start_date = body.start_date;
+      if (body.end_date !== undefined) project.end_date = body.end_date;
+      project.updated_at = timestamp();
+      saveState(state);
+      result = { ok: true, project };
+    } else if (parts[1] === 'projects' && parts.length === 3 && method === 'DELETE') {
+      const idx = (state.projects || []).findIndex((p) => p.id === parts[2]);
+      if (idx === -1) fail('المشروع غير موجود', 404);
+      state.projects.splice(idx, 1);
+      state.inline_comments = (state.inline_comments || []).filter((c) => c.project_id !== parts[2]);
+      saveState(state);
+      result = { ok: true };
+    } else if (parts[1] === 'projects' && parts[3] === 'comments' && parts.length === 5 && method === 'PATCH') {
+      const project = (state.projects || []).find((p) => p.id === parts[2]);
+      if (!project) fail('المشروع غير موجود', 404);
+      const comment = (state.inline_comments || []).find((c) => c.id === parts[4] && c.project_id === project.id);
+      if (!comment) fail('الملاحظة غير موجودة', 404);
+      if (body.status && ['open', 'in_progress', 'resolved'].includes(body.status)) {
+        comment.status = body.status;
+      }
+      saveState(state);
+      result = { ok: true, comment };
+    } else if (parts[1] === 'projects' && parts[3] === 'comments' && parts[5] === 'reply' && method === 'POST') {
+      const project = (state.projects || []).find((p) => p.id === parts[2]);
+      if (!project) fail('المشروع غير موجود', 404);
+      const comment = (state.inline_comments || []).find((c) => c.id === parts[4] && c.project_id === project.id);
+      if (!comment) fail('الملاحظة غير موجودة', 404);
+      const content = String(body.content || '').trim();
+      if (!content) fail('اكتب نص الرد', 400);
+      const reply = {
+        id: id(),
+        author: 'admin',
+        author_name: 'فريق الإدارة',
+        author_role: 'admin',
+        content,
+        created_at: timestamp(),
+      };
+      comment.replies ||= [];
+      comment.replies.push(reply);
+      if (body.status && ['open', 'in_progress', 'resolved'].includes(body.status)) {
+        comment.status = body.status;
+      }
+      addNotification(state, comment.client_id, {
+        type: 'reply',
+        text: `رد جديد من الإدارة على ملاحظتك في «${project.name}»`,
+        href: `/portal/projects/${project.id}`,
+        ref_id: comment.id,
+      });
+      saveState(state);
+      result = reply;
+    }
     else if (route === 'admin/clients' && method === 'GET') result = adminClients(state);
     else if (route === 'admin/clients' && method === 'POST') {
       const name = String(body.name || '').trim();

@@ -12,17 +12,27 @@ import {
   ClipboardList,
   Clock3,
   Copy,
+  ExternalLink,
   Eye,
   EyeOff,
   FileText,
+  FolderKanban,
   House,
   Image as ImageIcon,
   ListChecks,
   LogOut,
+  Maximize2,
+  MessageSquarePlus,
+  Minimize2,
+  Monitor,
   Paperclip,
+  Pencil,
   Plus,
   Send,
   Settings,
+  Smartphone,
+  Sparkles,
+  Tablet,
   Trash2,
   TriangleAlert,
   Users,
@@ -58,9 +68,19 @@ const ICONS = {
   requests: { glyph: ClipboardList },
   files: { glyph: FileText },
   clients: { glyph: Users },
+  projects: { glyph: FolderKanban },
   settings: { glyph: Settings },
   add: { glyph: Plus },
   chevron: { glyph: ChevronDown },
+  pencil: { glyph: Pencil },
+  external: { glyph: ExternalLink, flip: true },
+  monitor: { glyph: Monitor },
+  tablet: { glyph: Tablet },
+  smartphone: { glyph: Smartphone },
+  maximize: { glyph: Maximize2 },
+  minimize: { glyph: Minimize2 },
+  'comment-add': { glyph: MessageSquarePlus },
+  sparkles: { glyph: Sparkles },
 };
 
 export function Icon({ name, className = 'size-4' }) {
@@ -327,7 +347,7 @@ export function Bar({ value = 0, label, className = '' }) {
 
   return (
     <div
-      className={cx('bar', className)}
+      className={cx('bar-container', className)}
       role="progressbar"
       aria-valuenow={value}
       aria-valuemin={0}
@@ -335,18 +355,25 @@ export function Bar({ value = 0, label, className = '' }) {
       aria-label={label}
       dir="rtl"
     >
-      <m.div
-        className="bar-fill"
-        initial={{ width: '0%' }}
-        animate={{ width: `${pct}%` }}
-        transition={{
-          duration: 2.2,
-          ease: [0.25, 0.1, 0.25, 1],
-        }}
-      >
-        <span className="bar-gleam" aria-hidden="true" />
-        {pct > 0 && <span className="bar-glow" aria-hidden="true" />}
-      </m.div>
+      <div className="bar-track">
+        <m.div
+          className="bar-fill"
+          initial={{ width: '0%' }}
+          animate={{ width: `${pct}%` }}
+          transition={{
+            duration: 1.8,
+            ease: [0.16, 1, 0.3, 1],
+          }}
+        >
+          <span className="bar-stream" aria-hidden="true" />
+          {pct > 0 && (
+            <span className="bar-bead" aria-hidden="true">
+              <span className="bar-bead-core" />
+              <span className="bar-bead-halo" />
+            </span>
+          )}
+        </m.div>
+      </div>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { readState } from './localData.js';
-import { ClientLogin, ClientPasswordRecovery, ClientLayout, Portal, Updates, UpdateDetail, Phases, PhaseDetail, Requests, Files, Notifications } from './features/client/index.jsx';
-import { AdminLogin, AdminPasswordRecovery, AdminLayout, Clients, NewClient, AdminClient, Overview, Schedule, AdminRequests, AdminComments, Comms, AdminFiles, Settings } from './features/admin/index.jsx';
+import { ClientLogin, ClientPasswordRecovery, ClientLayout, Portal, ProjectDetail, Updates, UpdateDetail, Phases, PhaseDetail, Requests, Files, Notifications } from './features/client/index.jsx';
+import { AdminLogin, AdminPasswordRecovery, AdminLayout, Clients, NewClient, AdminProjects, AdminProjectDetail, AdminClient, Overview, Schedule, AdminRequests, AdminComments, Comms, AdminFiles, Settings } from './features/admin/index.jsx';
 
 function RootRedirect() {
   try {
@@ -24,6 +24,7 @@ export default function App() {
       <Route path="/forgot-password" element={<ClientPasswordRecovery />} />
       <Route path="/portal" element={<ClientLayout />}>
         <Route index element={<Portal />} />
+        <Route path="projects/:id" element={<ProjectDetail />} />
         <Route path="updates" element={<Updates />} />
         <Route path="updates/:id" element={<UpdateDetail />} />
         <Route path="phases" element={<Phases />} />
@@ -36,6 +37,8 @@ export default function App() {
       <Route path="/admin/forgot-password" element={<AdminPasswordRecovery />} />
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Clients />} />
+        <Route path="projects" element={<AdminProjects />} />
+        <Route path="projects/:id" element={<AdminProjectDetail />} />
         <Route path="new" element={<NewClient />} />
         <Route path="settings" element={<Settings />} />
         <Route path=":id" element={<AdminClient />}>

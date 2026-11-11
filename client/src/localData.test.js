@@ -192,3 +192,141 @@ test('email login and password recovery work for client and admin demo accounts'
   assert.equal(migratedOverview.client.project_name, 'هوية ومتجر دار شذرة');
   assert.equal(migratedOverview.files.length, 2);
 });
+
+test('Interactive Project Management, Client Isolation & Inline Comments System', async () => {
+  storage.clear();
+
+  // 1. Verify Mock Data cleanup: legacy fake clients should NOT exist
+  await post('/admin/login', { email: adminEmail, password: adminPassword });
+  const initialClients = await localData('/admin/clients');
+  const fakeIds = ['client-scents', 'client-ceramics', 'client-gifting'];
+  for (const fakeId of fakeIds) {
+    assert.equal(initialClients.some((c) => c.id === fakeId), false);
+  }
+
+  // 2. Admin creates a second client for testing RBAC and client isolation
+  const clientBRes = await post('/admin/clients', {
+    name: 'شركة الأفق التقنية',
+    project_name: 'منصة الأفق',
+    email: 'clientb@example.test',
+  });
+  const clientBId = clientBRes.id;
+
+  // 3. Admin creates a new project assigned specifically to demo client
+  await assert.rejects(
+    post('/admin/projects', { name: '', production_url: 'https://demo.shathrah.test', client_id: 'demo-client' }),
+    /اسم المشروع مطلوب/,
+  );
+  await assert.rejects(
+    post('/admin/projects', { name: 'متجر دار شذرة الجديد', production_url: 'invalid-url', client_id: 'demo-client' }),
+    /رابط موقع حي صحيح/,
+  );
+  await assert.rejects(
+    post('/admin/projects', { name: 'متجر دار شذرة الجديد', production_url: 'https://demo.test', client_id: 'non-existent-client' }),
+    /العميل المحدد غير موجود/,
+  );
+
+  const createdProjectRes = await post('/admin/projects', {
+    name: 'متجر دار شذرة الحي الفاخر',
+    production_url: 'https://store.shathrah.test',
+    client_id: 'demo-client',
+    status: 'in_progress',
+    progress: 55,
+    description: 'المتجر الإلكتروني الرئيسي لدار شذرة',
+  });
+  assert.ok(createdProjectRes.id);
+  const projectId = createdProjectRes.id;
+
+  // Verify project sections are automatically seeded with 8 standard sections
+  const adminProjectView = await localData(`/admin/projects/${projectId}`);
+  assert.equal(adminProjectView.project.name, 'متجر دار شذرة الحي الفاخر');
+  assert.equal(adminProjectView.project.sections.length, 8);
+  assert.ok(adminProjectView.project.sections.some((s) => s.id === 'design_ui'));
+
+  await post('/admin/logout', {});
+
+  // 4. Client A (demo client) logs in and sees their assigned project
+  await post('/client/login', { email: clientEmail, password: clientPassword });
+  const clientAProjects = await localData('/client/projects');
+  assert.ok(clientAProjects.some((p) => p.id === projectId));
+
+  // Client A views project details
+  const clientAProjectDetail = await localData(`/client/projects/${projectId}`);
+  assert.equal(clientAProjectDetail.project.id, projectId);
+  assert.equal(clientAProjectDetail.project.production_url, 'https://store.shathrah.test');
+
+  // Client A submits an inline comment on a section (e.g. design_ui)
+  await assert.rejects(
+    post(`/client/projects/${projectId}/comments`, { section_id: 'non-existent-section', content: 'ملاحظة' }),
+    /القسم المحدد غير موجود/,
+  );
+  await assert.rejects(
+    post(`/client/projects/${projectId}/comments`, { section_id: 'design_ui', content: ' ' }),
+    /اكتب نص الملاحظة/,
+  );
+
+  const commentRes = await post(`/client/projects/${projectId}/comments`, {
+    section_id: 'design_ui',
+    content: 'نود تكبير الخط العربي في العناوين الرئيسية ليكون أوضح.',
+  });
+  assert.ok(commentRes.id);
+  assert.equal(commentRes.author, 'client');
+  assert.equal(commentRes.status, 'open');
+
+  await post('/client/logout', {});
+
+  // 5. Client B logs in and CANNOT access Client A's project (Client Isolation / RBAC)
+  await post('/client/login', { email: 'clientb@example.test', password: clientPassword });
+  const clientBProjects = await localData('/client/projects');
+  assert.equal(clientBProjects.some((p) => p.id === projectId), false);
+
+  // Directly requesting Client A's project should fail with 404
+  await assert.rejects(
+    localData(`/client/projects/${projectId}`),
+    (error) => error.status === 404,
+  );
+  await assert.rejects(
+    post(`/client/projects/${projectId}/comments`, { section_id: 'design_ui', content: 'تطفل' }),
+    (error) => error.status === 404,
+  );
+
+  await post('/client/logout', {});
+
+  // 6. Admin logs in, reviews the comment, updates status, and replies
+  await post('/admin/login', { email: adminEmail, password: adminPassword });
+  const adminCommentsView = await localData(`/admin/projects/${projectId}`);
+  assert.equal(adminCommentsView.comments.length >= 1, true);
+  const targetComment = adminCommentsView.comments.find((c) => c.id === commentRes.id);
+  assert.ok(targetComment);
+
+  // Admin replies and marks status as resolved
+  await post(`/admin/projects/${projectId}/comments/${commentRes.id}/reply`, {
+    content: 'تم اعتماد التعديل وتكبير الخط في كامل المتجر.',
+    status: 'resolved',
+  });
+
+  // Verify status updated in admin view
+  const updatedAdminView = await localData(`/admin/projects/${projectId}`);
+  const resolvedComment = updatedAdminView.comments.find((c) => c.id === commentRes.id);
+  assert.equal(resolvedComment.status, 'resolved');
+  assert.equal(resolvedComment.replies.length, 1);
+  assert.equal(resolvedComment.replies[0].author, 'admin');
+
+  // 7. Admin updates project information (progress, name)
+  await localData(`/admin/projects/${projectId}`, {
+    method: 'PATCH',
+    body: { progress: 85, name: 'متجر دار شذرة الرسمي' },
+  });
+  const patchedView = await localData(`/admin/projects/${projectId}`);
+  assert.equal(patchedView.project.progress, 85);
+  assert.equal(patchedView.project.name, 'متجر دار شذرة الرسمي');
+
+  // 8. Admin deletes project and verifies cascade deletion
+  await localData(`/admin/projects/${projectId}`, { method: 'DELETE' });
+  await assert.rejects(
+    localData(`/admin/projects/${projectId}`),
+    (error) => error.status === 404,
+  );
+
+  await post('/admin/logout', {});
+});
