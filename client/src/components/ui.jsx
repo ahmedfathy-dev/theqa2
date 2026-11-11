@@ -333,14 +333,15 @@ export function Bar({ value = 0, label, className = '' }) {
       aria-valuemin={0}
       aria-valuemax={100}
       aria-label={label}
+      dir="rtl"
     >
       <m.div
         className="bar-fill"
         initial={{ width: '0%' }}
         animate={{ width: `${pct}%` }}
         transition={{
-          duration: 1.4,
-          ease: [0.22, 1, 0.36, 1],
+          duration: 2.2,
+          ease: [0.25, 0.1, 0.25, 1],
         }}
       >
         {pct > 0 && <span className="bar-glow" aria-hidden="true" />}
@@ -980,7 +981,7 @@ export function Gantt({ phases, start, end }) {
               style={{ insetInlineStart: `${((t(p.start_date) - min) / span) * 100}%`, width: `${((t(p.end_date) - t(p.start_date)) / span) * 100}%` }}
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}
-              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.08 + i * 0.05 }}
+              transition={{ duration: 1.8, ease: [0.25, 0.1, 0.25, 1], delay: 0.1 + i * 0.08 }}
               title={`${p.start_date} – ${p.end_date}`}
             />
           </div>
