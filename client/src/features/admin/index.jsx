@@ -2,30 +2,91 @@ import { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { localData, useLocalData } from '../../localData.js';
 import { fmtDate, fmtShort, fmtTime, KIND } from '../../format.js';
-import { AppSidebar, Bar, Button, ButtonLink, Card, ChatPanel, ChoiceGroup, Chip, CommentThread, Empty, ErrorBox, Field, FormError, Gantt, Icon, LinkCard, List, Loading, NavTabs, Page, Range, Reveal, Select, StatusChip, SwapIcon, useAction } from '../../components/ui.jsx';
+import { AppSidebar, AuthLayout, Bar, Button, ButtonLink, Card, ChatPanel, ChoiceGroup, Chip, CommentThread, Empty, ErrorBox, Field, FormError, Gantt, Icon, LinkCard, List, Loading, NavTabs, Page, PasswordInput, Range, Reveal, Select, StatusChip, SwapIcon, useAction, WorkspaceHeader } from '../../components/ui.jsx';
 import PhaseEditor from './components/PhaseEditor.jsx';
 import PasswordRecovery from '../auth/PasswordRecovery.jsx';
+import MobileNav from '../../components/MobileNav.jsx';
 
 // ---------- الدخول والإطار ----------
+export function AdminLogin() {
+  const [email, setEmail] = useState('admin@example.test');
+  const [password, setPassword] = useState('admin123');
+  const [missing, setMissing] = useState('');
+  const { state } = useLocation();
+  const [loggedOut] = useState(Boolean(state?.loggedOut));
+  const { busy, err, run } = useAction();
+  const nav = useNavigate();
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setMissing('أدخل بريدًا إلكترونيًا صحيحًا.'); return; }
+    if (!password) { setMissing('أدخل كلمة المرور للمتابعة.'); return; }
+    const ok = await run(
+      () => localData('/admin/login', { method: 'POST', body: { email, password } }),
+      'تم تسجيل الدخول بنجاح',
+    );
+    if (ok) nav('/admin', { replace: true });
+  };
+  return (
+    <AuthLayout
+      brand="دار شذرة"
+      heading="لوحة تحكم الإدارة"
+      description="تسجيل الدخول لفريق العمل وإدارة مشاريع العملاء."
+      points={['إدارة العملاء والمشاريع', 'الجدولة والمراحل والطلبات', 'التواصل والتحديثات المباشرة']}
+      notice={loggedOut ? 'تم تسجيل الخروج بنجاح' : null}
+      onSubmit={submit}
+    >
+      <Field label="البريد الإلكتروني للإدارة" error={missing || err}>
+        <input type="email" className="ltr" dir="ltr" autoFocus autoComplete="email" required value={email} onChange={(e) => { setEmail(e.target.value); setMissing(''); }} placeholder="admin@example.test" />
+      </Field>
+      <Field label="كلمة المرور">
+        <PasswordInput autoComplete="current-password" required value={password} onChange={(e) => { setPassword(e.target.value); setMissing(''); }} />
+      </Field>
+      <Button block loading={busy}>تسجيل دخول الإدارة</Button>
+      <ButtonLink to="/admin/forgot-password" variant="ghost" size="small" block>هل نسيت كلمة المرور؟</ButtonLink>
+    </AuthLayout>
+  );
+}
+
 export function AdminPasswordRecovery() {
   return <PasswordRecovery role="admin" />;
 }
 
 export function AdminLayout() {
   const { error, loading } = useLocalData('/admin/me');
+  const { data: clientsData } = useLocalData('/admin/clients');
   const nav = useNavigate();
   if (loading) return <Loading />;
   if (error) return <ErrorBox error={error} />;
   const logout = async () => { await localData('/admin/logout', { method: 'POST' }); nav('/admin/login', { replace: true, state: { loggedOut: true } }); };
   const items = [
-    { to: '/admin', label: 'العملاء', icon: 'clients' },
+    { to: '/admin', label: 'العملاء', icon: 'clients', end: false },
     { to: '/admin/new', label: 'عميل جديد', icon: 'add' },
     { to: '/admin/settings', label: 'الإعدادات المحلية', icon: 'settings' },
   ];
+  const waitingCount = Array.isArray(clientsData)
+    ? clientsData.reduce((total, client) => total + (client.open_requests || 0) + (client.waiting_comments || 0), 0)
+    : 0;
   return (
     <div className="app-shell">
-      <AppSidebar items={items} label="الإدارة" logoTo="/admin" onLogout={logout} />
+      <AppSidebar
+        items={items}
+        label="الإدارة"
+        logoTo="/admin"
+        onLogout={logout}
+        workspace="مساحة الفريق"
+        notificationTo="/admin"
+        unreadCount={waitingCount}
+        notificationLabel="تنبيهات المتابعة"
+      />
+      <MobileNav
+        items={items}
+        label="الإدارة"
+        title="مساحة الفريق"
+        logoTo="/admin"
+        onLogout={logout}
+      />
       <main className="app-main">
+        <WorkspaceHeader items={items} workspace="مساحة الفريق" homeTo="/admin" />
         <Outlet />
       </main>
     </div>
@@ -39,9 +100,24 @@ export function Clients() {
   if (loading) return <Loading />;
   if (error) return <ErrorBox error={error} />;
   const list = data.filter((c) => (c.name + c.project_name).includes(q));
+  const openRequests = data.reduce((total, client) => total + (client.open_requests || 0), 0);
+  const waitingComments = data.reduce((total, client) => total + (client.waiting_comments || 0), 0);
   return (
-    <Page title="العملاء" actions={<ButtonLink to="/admin/new">عميل جديد</ButtonLink>}>
-      <input type="search" placeholder="بحث باسم الشركة أو المشروع" aria-label="بحث" value={q} onChange={(e) => setQ(e.target.value)} />
+    <Page title="العملاء" sub="نظرة على المشاريع ومتابعة ما يحتاج إلى إجراء" actions={<ButtonLink to="/admin/new">عميل جديد</ButtonLink>}>
+      <section className="tool-overview tool-overview-hero">
+        <div className="tool-overview-copy">
+          <h2>مساحة إدارة المشاريع</h2>
+          <p>تابع تقدم العملاء والطلبات والتعليقات التي تنتظر المتابعة.</p>
+        </div>
+        <div className="tool-overview-stats" aria-label="ملخص العمل">
+          <div className="tool-stats-item"><strong>{data.length}</strong><span>عميل</span></div>
+          <div className="tool-stats-item"><strong>{openRequests}</strong><span>طلب مفتوح</span></div>
+          <div className="tool-stats-item"><strong>{waitingComments}</strong><span>تعليق ينتظر الرد</span></div>
+        </div>
+      </section>
+      <div className="client-list-search">
+        <input type="search" placeholder="بحث باسم الشركة أو المشروع" aria-label="بحث" value={q} onChange={(e) => setQ(e.target.value)} />
+      </div>
       {list.length === 0 && <Card><Empty>لا يوجد عملاء.</Empty></Card>}
       <List className="cols">
         {list.map((c) => (
@@ -87,7 +163,10 @@ export function NewClient() {
           <Field label="تاريخ النهاية"><input type="date" value={f.end_date} onChange={set('end_date')} /></Field>
         </div>
         <FormError message={err} />
-        <Button loading={busy} disabled={busy}>إنشاء</Button>
+        <div className="flex items-center justify-end gap-3 pt-3">
+          <ButtonLink to="/admin" variant="secondary">إلغاء</ButtonLink>
+          <Button loading={busy} disabled={busy}>إنشاء العميل</Button>
+        </div>
       </Card>
     </Page>
   );
@@ -156,7 +235,12 @@ export function Overview() {
           <span>تليجرام: {c.telegram_chat || '—'}</span>
         </Card>
       </div>
-      <Link to={`/admin/${id}/schedule`} className="page-back">إدارة الجدولة<Icon name="next" /></Link>
+      <div className="flex justify-end pt-3">
+        <ButtonLink to={`/admin/${id}/schedule`} variant="outline" size="small">
+          إدارة الجدولة
+          <Icon name="next" />
+        </ButtonLink>
+      </div>
     </>
   );
 }
@@ -178,7 +262,9 @@ export function Schedule() {
           <Field label="النهاية"><input type="date" value={f.end_date} onChange={(e) => setF({ ...f, end_date: e.target.value })} /></Field>
         </div>
         <FormError message={err} />
-        <Button loading={busy} disabled={busy}>حفظ</Button>
+        <div className="flex justify-end pt-2">
+          <Button loading={busy} disabled={busy}>حفظ التغييرات</Button>
+        </div>
       </Card>
       {d.phases.map((phase) => <PhaseEditor key={phase.id} phase={phase} reload={reload} />)}
     </>
@@ -223,7 +309,9 @@ export function AdminRequests() {
         <Field label="شرح قصير"><input type="text" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></Field>
         {f.kind === 'decision' && <Field label="الخيارات (كل خيار في سطر)"><textarea rows={3} value={f.options} onChange={(e) => setF({ ...f, options: e.target.value })} /></Field>}
         <FormError message={err} />
-        <Button loading={busy} disabled={busy || !f.title.trim()}>إضافة طلب</Button>
+        <div className="flex justify-end pt-2">
+          <Button loading={busy} disabled={busy || !f.title.trim()}>إضافة طلب</Button>
+        </div>
       </Card>
     </div>
   );
@@ -283,7 +371,9 @@ export function Comms() {
         </Field>
         <Field label="التفاصيل"><textarea rows={5} value={u.body} onChange={(e) => setU({ ...u, body: e.target.value })} /></Field>
         <FormError message={b.err} />
-        <Button loading={b.busy} disabled={b.busy || !u.title.trim()}>نشر وإشعار العميل</Button>
+        <div className="flex justify-end pt-2">
+          <Button loading={b.busy} disabled={b.busy || !u.title.trim()}>نشر وإشعار العميل</Button>
+        </div>
         <div className="col gap-1">
           <h3>التحديثات المنشورة</h3>
           <List className="col gap-1">
@@ -310,7 +400,9 @@ export function AdminFiles() {
         </div>
         <span className="muted small">ارفع الملف على Google Drive أو غيره وضع رابط المشاركة هنا.</span>
         <FormError message={err} />
-        <Button loading={busy} disabled={busy || !f.name.trim() || !f.url.trim()}>إضافة</Button>
+        <div className="flex justify-end pt-2">
+          <Button loading={busy} disabled={busy || !f.name.trim() || !f.url.trim()}>إضافة الملف</Button>
+        </div>
       </Card>
       <Card title="ملفات العميل">
         {d.files.length ? (

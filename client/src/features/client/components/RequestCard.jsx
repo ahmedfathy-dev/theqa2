@@ -31,16 +31,24 @@ export default function RequestCard({ request, onDone }) {
                 onChange={setAnswer}
                 options={(request.options || []).map((option) => ({ value: option.label, label: option.label }))}
               />
-              <Button loading={busy} disabled={busy || !answer} onClick={() => send(answer)}>تأكيد القرار</Button>
+              <div className="flex items-center justify-end pt-2">
+                <Button loading={busy} disabled={busy || !answer} onClick={() => send(answer)}>تأكيد القرار</Button>
+              </div>
             </>
           )}
           {request.kind === 'content' && (
             <>
               <textarea rows={3} value={answer} onChange={(event) => setAnswer(event.target.value)} placeholder="اكتب المحتوى أو ضع رابطا" aria-label="الرد" />
-              <Button loading={busy} disabled={busy || !answer.trim()} onClick={() => send(answer)}>إرسال</Button>
+              <div className="flex items-center justify-end pt-2">
+                <Button loading={busy} disabled={busy || !answer.trim()} onClick={() => send(answer)}>إرسال</Button>
+              </div>
             </>
           )}
-          {request.kind === 'approval' && <Button loading={busy} disabled={busy} onClick={() => send('')}>اعتماد</Button>}
+          {request.kind === 'approval' && (
+            <div className="flex items-center justify-end pt-2">
+              <Button loading={busy} disabled={busy} onClick={() => send('')}>اعتماد</Button>
+            </div>
+          )}
           <FormError message={err} />
         </div>
       )}

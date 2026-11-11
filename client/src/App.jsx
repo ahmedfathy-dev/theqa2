@@ -1,11 +1,11 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { ClientLogin, ClientPasswordRecovery, ClientLayout, Portal, Updates, UpdateDetail, Phases, PhaseDetail, Requests, Files, Notifications } from './features/client/index.jsx';
-import { AdminPasswordRecovery, AdminLayout, Clients, NewClient, AdminClient, Overview, Schedule, AdminRequests, AdminComments, Comms, AdminFiles, Settings } from './features/admin/index.jsx';
+import { AdminLogin, AdminPasswordRecovery, AdminLayout, Clients, NewClient, AdminClient, Overview, Schedule, AdminRequests, AdminComments, Comms, AdminFiles, Settings } from './features/admin/index.jsx';
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<Navigate to="/portal" replace />} />
       <Route path="/login" element={<ClientLogin />} />
       <Route path="/forgot-password" element={<ClientPasswordRecovery />} />
       <Route path="/portal" element={<ClientLayout />}>
@@ -18,7 +18,7 @@ export default function App() {
         <Route path="files" element={<Files />} />
         <Route path="notifications" element={<Notifications />} />
       </Route>
-      <Route path="/admin/login" element={<Navigate to="/login" replace />} />
+      <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin/forgot-password" element={<AdminPasswordRecovery />} />
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Clients />} />

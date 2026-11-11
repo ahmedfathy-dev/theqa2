@@ -10,7 +10,7 @@ globalThis.localStorage = {
 
 const { isAdminEmail, localData } = await import('./localData.js');
 const post = (path, body) => localData(path, { method: 'POST', body });
-const storageKey = 'react-portal-data-v1';
+const storageKey = 'react-portal-data-v2';
 const clientEmail = 'client@example.test';
 const clientPassword = 'client123';
 const adminEmail = 'admin@example.test';
@@ -42,8 +42,8 @@ test('email login and password recovery work for client and admin demo accounts'
   await post('/client/login', { email: 'new-client@example.com', password: 'any-password' });
   const demoOverview = await localData('/client/overview');
   assert.equal(demoOverview.client.id, 'demo-client');
-  assert.equal(demoOverview.client.brand_name, 'دار سُدرة');
-  assert.equal(demoOverview.client.project_name, 'هوية ومتجر دار سُدرة');
+  assert.equal(demoOverview.client.brand_name, 'دار شذرة');
+  assert.equal(demoOverview.client.project_name, 'هوية ومتجر دار شذرة');
   assert.equal(demoOverview.client.progress, 42);
   assert.ok(demoOverview.phases.some((phase) => phase.status === 'current'));
   assert.equal(demoOverview.updates.length, 3);
@@ -188,7 +188,7 @@ test('email login and password recovery work for client and admin demo accounts'
   await post('/client/login', { email: clientEmail, password: clientPassword });
   const migratedOverview = await localData('/client/overview');
   assert.equal(migratedOverview.client.email, clientEmail);
-  assert.equal(migratedOverview.client.brand_name, 'دار سُدرة');
-  assert.equal(migratedOverview.client.project_name, 'هوية ومتجر دار سُدرة');
+  assert.equal(migratedOverview.client.brand_name, 'دار شذرة');
+  assert.equal(migratedOverview.client.project_name, 'هوية ومتجر دار شذرة');
   assert.equal(migratedOverview.files.length, 2);
 });

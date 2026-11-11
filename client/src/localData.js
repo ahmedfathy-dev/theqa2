@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-const STORAGE_KEY = 'react-portal-data-v1';
+const STORAGE_KEY = 'react-portal-data-v2';
 const DEMO_ADMIN = { email: 'admin@example.test', password: 'admin123' };
 const DEMO_CLIENT = { email: 'client@example.test', password: 'client123' };
 const DEFAULT_PHASES = ['جمع المتطلبات', 'التصميم', 'التطوير', 'الاختبار والمراجعة', 'التسليم'];
@@ -93,22 +93,23 @@ function confirmPasswordReset(state, role, body) {
 }
 
 function seedDemoProject(state) {
-  if (state.demoContentVersion || !state.clients?.some((client) => client.id === 'demo-client')) return false;
+  if ((state.demoContentVersion >= 4 && state.clients?.length >= 4) || !state.clients?.some((client) => client.id === 'demo-client')) return false;
 
   const client = state.clients.find((row) => row.id === 'demo-client');
-  if (client.name === 'عميل تجريبي') client.name = 'دار سُدرة';
-  if (client.project_name === 'الموقع الإلكتروني') client.project_name = 'هوية ومتجر دار سُدرة';
+  if (client.name === 'عميل تجريبي' || client.name === 'دار سُدرة') client.name = 'دار شذرة';
+  if (client.project_name === 'الموقع الإلكتروني' || client.project_name === 'هوية ومتجر دار سُدرة') client.project_name = 'هوية ومتجر دار شذرة';
   if (!client.contact_name || client.contact_name === 'محمد') client.contact_name = 'سارة العبدالله';
   if (client.progress === 25) client.progress = 42;
   client.start_date ||= relativeDate(-14);
   client.end_date ||= relativeDate(30);
-  client.brand_name ||= 'دار سُدرة';
-  client.brand_tagline ||= 'طبيعة بيتك، بروح أهدأ';
-  client.brand_description ||= 'هوية متجر لمنتجات منزلية طبيعية، تجمع هدوء الطبيعة بدفء التفاصيل.';
-  client.brand_palette ||= [
-    { name: 'أخضر السرو', value: '#244B3D' },
-    { name: 'رملي دافئ', value: '#D8BE94' },
-    { name: 'عاجي', value: '#F4F0E7' },
+  client.brand_name = 'دار شذرة';
+  client.brand_tagline = 'عطور ومنتجات منزلية راقية بروح الطبيعة ولمسات الذهب';
+  client.brand_description = 'منصة فاخرة للمنتجات المنزلية الطبيعية والعطور الحرفية، تجمع بين نقاء المواد وأصالة الحرف وهدوء التصميم الموشى بالذهب الدافئ.';
+  client.brand_palette = [
+    { name: 'أخضر شذرة النباتي', value: '#2C6852' },
+    { name: 'ذهب شذرة الدافئ', value: '#DAB272' },
+    { name: 'بيج رملي ناعم', value: '#E8DAC2' },
+    { name: 'عاجي ناصع', value: '#FAF6F0' },
   ];
 
   const phases = state.phases.filter((phase) => phase.client_id === client.id).sort((a, b) => a.sort - b.sort);
@@ -140,21 +141,21 @@ function seedDemoProject(state) {
   });
 
   const welcomeUpdate = state.updates.find((update) => update.id === 'update-1');
-  if (welcomeUpdate?.title === 'أهلا بك في بوابة المشروع') {
-    welcomeUpdate.title = 'انطلاق مشروع هوية دار سُدرة';
-    welcomeUpdate.body = 'بدأنا بتحديد شخصية العلامة والجمهور المستهدف، وننتقل الآن إلى اعتماد الشعار ولوحة الألوان.';
+  if (welcomeUpdate?.title === 'أهلا بك في بوابة المشروع' || welcomeUpdate?.title === 'انطلاق مشروع هوية دار سُدرة') {
+    welcomeUpdate.title = 'انطلاق مشروع هوية دار شذرة';
+    welcomeUpdate.body = 'بدأنا بتحديد شخصية العلامة ونبرة دار شذرة الفاخرة والجمهور المستهدف للمنتجات المنزلية الطبيعية.';
     welcomeUpdate.phase_name = phases[0]?.name || DEFAULT_PHASES[0];
     welcomeUpdate.created_at = relativeTimestamp(-8, 11);
   }
   const updates = [
     {
-      id: 'update-2', title: 'اتجاه بصري مستوحى من الطبيعة',
-      body: 'جهزنا مسارين بصريين يمزجان أخضر السرو بالدرجات الرملية، مع خطوط عربية واضحة وتفاصيل هادئة.',
+      id: 'update-2', title: 'المسار البصري المعتمد: أخضر شذرة النباتي والذهب الدافئ',
+      body: 'جهزنا مسارات بصرية تمزج أخضر شذرة النباتي بدرجات الذهب الدافئ الفاخر (#DAB272) والبيج الرملي والعاجي، مع خطوط عربية متناسقة ونماذج تغليف تعكس نقاء الطبيعة وفخامة الحرف اليدوية.',
       phase_name: 'التصميم', created_at: relativeTimestamp(-3, 14),
     },
     {
-      id: 'update-3', title: 'الشعار الأولي جاهز للمراجعة',
-      body: 'أضفنا تصور الشعار ولوحة الهوية إلى الملفات. ننتظر اعتماد لوحة الألوان قبل استكمال واجهة المتجر.',
+      id: 'update-3', title: 'الشعار الأولي وعبوات المنتجات الفاخرة جاهزة للمعاينة',
+      body: 'أضفنا تصور الشعار ولوحة الهوية البصرية ونماذج عبوات الشموع والعطور بلمسات الذهبي الملكي. ننتظر اعتماد لوحة الألوان قبل استكمال الواجهة الرقمية.',
       phase_name: 'التصميم', created_at: relativeTimestamp(-1, 10),
     },
   ];
@@ -166,29 +167,29 @@ function seedDemoProject(state) {
   });
 
   const firstRequest = state.requests.find((request) => request.id === 'request-1');
-  if (firstRequest?.title === 'اختر اللون الرئيسي') {
-    firstRequest.title = 'اعتماد لوحة الألوان';
-    firstRequest.description = 'أي لوحة أقرب لهوية دار سُدرة؟ اختيارك يحدد اتجاه تصميم المتجر.';
+  if (firstRequest?.title === 'اختر اللون الرئيسي' || firstRequest?.title === 'اعتماد لوحة الألوان') {
+    firstRequest.title = 'اعتماد لوحة الألوان لمجموعات دار شذرة';
+    firstRequest.description = 'أي لوحة أقرب لهوية دار شذرة؟ اختيارك يحدد اتجاه تغليف المنتجات وتصميم واجهة المتجر ولمسات الذهب الملكي.';
     firstRequest.options = [
-      { label: 'أخضر السرو والرملي' },
-      { label: 'أخضر زيتوني وعاجي' },
-      { label: 'طوبي دافئ ورملي' },
+      { label: 'أخضر شذرة النباتي (#2C6852) مع ذهب دافئ (#DAB272) وعاجي (الموصى به)' },
+      { label: 'أخضر زيتوني ملكي مع ذهب عتيق وبيج رملي' },
+      { label: 'درجات خشب الصندل الدافئ مع أخضر الغابة العميق وذهب شذرة' },
     ];
   }
   state.requests ||= [];
   if (!state.requests.some((request) => request.id === 'request-2')) {
     state.requests.push({
       id: 'request-2', client_id: client.id, kind: 'approval',
-      title: 'مراجعة الشعار الأولي',
-      description: 'راجع الشعار المرفق وأرسل اعتمادك أو ملاحظاتك للفريق.',
+      title: 'مراجعة واعتماد الشعار الأولي',
+      description: 'راجع الشعار المرفق ونماذج استخدامه على المنتجات وأرسل اعتمادك أو ملاحظاتك للفريق.',
       options: [], status: 'open', answer: null, created_at: relativeTimestamp(-1, 10),
     });
   }
 
   state.files ||= [];
   [
-    { id: 'file-brand-board', name: 'لوحة الهوية البصرية - دار سُدرة.svg', url: '/demo/sidra-brand-board.svg', created_at: relativeTimestamp(-1, 9) },
-    { id: 'file-brand-mark', name: 'الشعار الأولي - دار سُدرة.svg', url: '/demo/sidra-mark.svg', created_at: relativeTimestamp(-3, 13) },
+    { id: 'file-brand-board', name: 'لوحة الهوية البصرية - دار شذرة.svg', url: '/demo/sidra-brand-board.svg', created_at: relativeTimestamp(-1, 9) },
+    { id: 'file-brand-mark', name: 'الشعار الأولي - دار شذرة.svg', url: '/demo/sidra-mark.svg', created_at: relativeTimestamp(-3, 13) },
   ].forEach((file) => {
     if (!state.files.some((existing) => existing.id === file.id)) {
       state.files.push({ ...file, client_id: client.id });
@@ -197,13 +198,13 @@ function seedDemoProject(state) {
 
   const welcomeMessage = state.messages.find((message) => message.id === 'message-1');
   if (welcomeMessage?.body === 'أهلا بك! يمكنك إرسال أي استفسار من هذه الصفحة.') {
-    welcomeMessage.body = 'أهلًا سارة! شاركنا معك تصور الهوية الأولي. أرسل ملاحظاتك أو اعتمد لوحة الألوان من قسم «المطلوب منك».';
+    welcomeMessage.body = 'أهلًا سارة! شاركنا معك تصور هوية دار شذرة الأولي ونماذج المنتجات. يمكنك مراجعتها واعتماد لوحة الألوان من قسم «المطلوب منك».';
     welcomeMessage.created_at = relativeTimestamp(-3, 13);
   }
   state.messages ||= [];
   [
-    { id: 'message-2', from_client: true, body: 'الأخضر مع الرملي مناسب جدًا، أحب أن تكون الهوية هادئة وقريبة من الطبيعة.', created_at: relativeTimestamp(-2, 10) },
-    { id: 'message-3', from_client: false, body: 'وصلتنا ملاحظتك. أضفنا خيارين للوحة الألوان لتختاري الأنسب، والشعار الأولي جاهز للمراجعة.', created_at: relativeTimestamp(-1, 11) },
+    { id: 'message-2', from_client: true, body: 'الأخضر النباتي مع لمسات الذهب الدافئ مناسب جداً وفخم، ويعكس تماماً طابع منتجات دار شذرة الراقية.', created_at: relativeTimestamp(-2, 10) },
+    { id: 'message-3', from_client: false, body: 'سعداء جداً بإعجابك سارة! اعتمدنا لمسات الذهب الدافئ على حواف العبوات والشعار، وخيارات لوحة الألوان جاهزة لاعتمادك النهائي.', created_at: relativeTimestamp(-1, 11) },
   ].forEach((message) => {
     if (!state.messages.some((existing) => existing.id === message.id)) {
       state.messages.push({ ...message, client_id: client.id });
@@ -213,19 +214,127 @@ function seedDemoProject(state) {
   state.notifications ||= [];
   const welcomeNotification = state.notifications.find((notification) => notification.id === 'notification-1');
   if (welcomeNotification) {
-    welcomeNotification.text = 'تحديث جديد: انطلاق مشروع هوية دار سُدرة';
+    welcomeNotification.text = 'تحديث جديد: انطلاق مشروع هوية دار شذرة';
   }
   [
-    { id: 'notification-update-3', type: 'update', text: 'تحديث جديد: الشعار الأولي جاهز للمراجعة', href: '/portal/updates/update-3', ref_id: 'update-3', read: false, created_at: relativeTimestamp(-1, 10) },
-    { id: 'notification-request-2', type: 'request', text: 'مطلوب منك: مراجعة الشعار الأولي', href: '/portal/requests', ref_id: 'request-2', read: false, created_at: relativeTimestamp(-1, 10) },
-    { id: 'notification-file-board', type: 'file', text: 'أضفنا ملف «لوحة الهوية البصرية - دار سُدرة.svg»', href: '/portal/files', ref_id: 'file-brand-board', read: false, created_at: relativeTimestamp(-1, 9) },
+    { id: 'notification-update-3', type: 'update', text: 'تحديث جديد: الشعار الأولي وعبوات المنتجات جاهزة للمراجعة', href: '/portal/updates/update-3', ref_id: 'update-3', read: false, created_at: relativeTimestamp(-1, 10) },
+    { id: 'notification-request-2', type: 'request', text: 'مطلوب منك: مراجعة واعتماد الشعار الأولي', href: '/portal/requests', ref_id: 'request-2', read: false, created_at: relativeTimestamp(-1, 10) },
+    { id: 'notification-file-board', type: 'file', text: 'أضفنا ملف «لوحة الهوية البصرية - دار شذرة.svg»', href: '/portal/files', ref_id: 'file-brand-board', read: false, created_at: relativeTimestamp(-1, 9) },
   ].forEach((notification) => {
     if (!state.notifications.some((existing) => existing.id === notification.id)) {
       state.notifications.push({ ...notification, client_id: client.id });
     }
   });
 
-  state.demoContentVersion = 1;
+  // Additional mock clients for the Admin portal
+  const mockClients = [
+    {
+      id: 'client-scents',
+      username: 'shathrah-scents',
+      name: 'شذرة هوم للشموع والعطور',
+      project_name: 'خط إنتاج الشموع العطرية الفاخرة',
+      contact_name: 'ريم القحطاني',
+      email: 'reem@shathrah.test',
+      telegram_chat: '@reem_shathrah',
+      start_date: relativeDate(-20),
+      end_date: relativeDate(15),
+      progress: 75,
+      health: 'ok',
+      current_phase: 'التطوير والتغليف',
+      open_requests: 0,
+      waiting_comments: 0,
+      notify_email: true,
+      notify_telegram: false,
+      created_at: relativeTimestamp(-20),
+    },
+    {
+      id: 'client-ceramics',
+      username: 'shathrah-ceramics',
+      name: 'أواني شذرة الخزفية',
+      project_name: 'مجموعة المائدة الخزفية الحرفية',
+      contact_name: 'عبدالله التميمي',
+      email: 'ceramics@shathrah.test',
+      telegram_chat: '',
+      start_date: relativeDate(-10),
+      end_date: relativeDate(40),
+      progress: 30,
+      health: 'wait',
+      current_phase: 'التصميم والنماذج',
+      open_requests: 2,
+      waiting_comments: 1,
+      notify_email: false,
+      notify_telegram: false,
+      created_at: relativeTimestamp(-10),
+    },
+    {
+      id: 'client-gifting',
+      username: 'shathrah-gifting',
+      name: 'صناديق هدايا دار شذرة',
+      project_name: 'كتالوج هدايا المناسبات والمواسم',
+      contact_name: 'نورة السبيعي',
+      email: 'gifting@shathrah.test',
+      telegram_chat: '@noura_gifts',
+      start_date: relativeDate(-35),
+      end_date: relativeDate(-2),
+      progress: 95,
+      health: 'ok',
+      current_phase: 'التسليم والتدشين',
+      open_requests: 0,
+      waiting_comments: 0,
+      notify_email: true,
+      notify_telegram: true,
+      created_at: relativeTimestamp(-35),
+    },
+  ];
+
+  mockClients.forEach((mc) => {
+    if (!state.clients.some((existing) => existing.id === mc.id)) {
+      state.clients.push(mc);
+      // Seed phases for extra client
+      DEFAULT_PHASES.forEach((pName, pIdx) => {
+        state.phases.push({
+          id: `phase-${mc.id}-${pIdx + 1}`,
+          client_id: mc.id,
+          name: pName,
+          sort: pIdx,
+          status: pIdx < 2 ? 'done' : pIdx === 2 ? 'current' : 'next',
+          start_date: relativeDate(-15 + pIdx * 8),
+          end_date: relativeDate(-15 + (pIdx + 1) * 8),
+        });
+      });
+    }
+  });
+
+  state.comments ||= [];
+  const demoComments = [
+    {
+      id: 'comment-1',
+      target_type: 'update',
+      target_id: 'update-3',
+      client_id: client.id,
+      author_role: 'client',
+      author_name: 'سارة العبدالله',
+      body: 'تصميم العبوات أنيق للغاية وتدرجات الأخضر طبيعية ومريحة، ننتظر رؤية العينات الورقية.',
+      created_at: relativeTimestamp(-1, 11),
+    },
+    {
+      id: 'comment-2',
+      target_type: 'update',
+      target_id: 'update-3',
+      client_id: client.id,
+      author_role: 'admin',
+      author_name: 'فريق دار شذرة',
+      body: 'سعداء بإعجابك سارة! سنجهز نماذج الطباعة على الورق القطني خلال يومين.',
+      created_at: relativeTimestamp(-1, 12),
+    },
+  ];
+  demoComments.forEach((c) => {
+    if (!state.comments.some((existing) => existing.id === c.id)) {
+      state.comments.push(c);
+    }
+  });
+
+  state.demoContentVersion = 4;
   return true;
 }
 
@@ -247,7 +356,7 @@ function createInitialState() {
     { id: 'item-3', phase_id: phases[1].id, client_id: clientId, name: 'إعداد التصور الأولي', status: 'next', sort: 0, done_at: null },
   ];
   const state = {
-    session: { clientId: null, admin: false },
+    session: { clientId, admin: false },
     auth: {
       admin: { ...DEMO_ADMIN },
       clients: { [clientId]: { ...DEMO_CLIENT } },
@@ -327,6 +436,11 @@ function readState() {
     const state = JSON.parse(saved);
     let migrated = false;
     state.auth ||= { admin: { ...DEMO_ADMIN }, clients: {}, accounts: {}, passwordResets: {} };
+    state.session ||= { clientId: 'demo-client', admin: false };
+    if (!state.session.clientId && !state.session.admin) {
+      state.session.clientId = 'demo-client';
+      migrated = true;
+    }
     if (!state.auth.admin?.email || !state.auth.admin?.password) {
       state.auth.admin = { ...DEMO_ADMIN };
       migrated = true;

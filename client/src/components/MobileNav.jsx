@@ -11,16 +11,22 @@ const RouterLink = ({ href, ...props }) => <Link to={href} {...props} />;
 const SKIN = {
   '--cn-logo': '34px',
   '--cn-radius': '16px',
-  '--cn-panel': 'rgb(255 255 255 / 0.92)',
+  '--cn-panel': '#ffffff',
+  '--cn-solid': '#ffffff',
   '--cn-edge': 'rgb(var(--line))',
-  '--cn-highlight': 'rgb(255 255 255)',
+  '--cn-highlight': '#ffffff',
   '--cn-shadow': 'var(--shadow-float)',
+  '--cn-blur': 'none',
   '--cn-text': 'rgb(var(--ink))',
   '--cn-muted': 'rgb(var(--muted))',
   '--cn-hover': 'rgb(var(--brand-50))',
   '--cn-ring': 'rgb(var(--brand-600))',
-  '--cn-tile': 'linear-gradient(180deg, rgb(var(--brand-50)), rgb(255 255 255))',
-  '--cn-tile-rim': 'inset 0 0 0 1px rgb(var(--brand-100))',
+  '--cn-tile': '#ffffff',
+  '--cn-tile-rim': 'inset 0 0 0 1px rgb(var(--line))',
+  '--cn-cta': 'rgb(var(--brand-600))',
+  '--cn-cta-ink': '#ffffff',
+  '--cn-cta-shadow': 'var(--shadow-xs)',
+  '--cn-cta-hover': 'brightness(1.08)',
 };
 
 // Small-screen navbar: the same links as the desktop tabs, inside a CardNav menu.
@@ -37,15 +43,15 @@ export default function MobileNav({ items, label, title, logoTo, onLogout, trail
     })),
   }];
   return (
-    <div className="mobile-nav">
+    <div className="mobile-nav hidden max-[900px]:flex">
       <CardNav
         className="min-w-0 flex-1"
         logo={logoUrl}
-        logoAlt="ثقة، الصفحة الرئيسية"
+        logoAlt="دار شذرة، الصفحة الرئيسية"
         logoHref={logoTo}
         items={cards}
         cta={{ label: 'تسجيل خروج', onClick: () => setConfirming(true) }}
-        accentColor="#0b7d6f"
+        accentColor="#244B3D"
         cardHeight={0}
         maxWidth={640}
         intro={false}

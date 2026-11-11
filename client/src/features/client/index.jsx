@@ -2,14 +2,15 @@ import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate, useOutletContext, useParams, Link } from 'react-router-dom';
 import { isAdminEmail, localData, useLocalData } from '../../localData.js';
 import { fmtDate, fmtShort, fmtTime, KIND, NOTIF_TYPE } from '../../format.js';
-import { AppSidebar, AuthLayout, Bar, Button, ButtonLink, Card, ChatPanel, Chip, CommentThread, Empty, ErrorBox, Field, FormError, LinkCard, List, Loading, Page, PasswordInput, Range, StatusChip, Switch, useAction } from '../../components/ui.jsx';
+import { AppSidebar, AuthLayout, Bar, Button, ButtonLink, Card, ChatPanel, Chip, CommentThread, Empty, ErrorBox, Field, FormError, Icon, LinkCard, List, Loading, Page, PasswordInput, Range, StatusChip, Switch, useAction, WorkspaceHeader } from '../../components/ui.jsx';
+import MobileNav from '../../components/MobileNav.jsx';
 import FeatureRequestCard from './components/RequestCard.jsx';
 import PasswordRecovery from '../auth/PasswordRecovery.jsx';
 
 // ---------- الدخول ----------
 export function ClientLogin() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('client@example.test');
+  const [password, setPassword] = useState('client123');
   const [missing, setMissing] = useState('');
   const { state } = useLocation();
   const [loggedOut] = useState(Boolean(state?.loggedOut));
@@ -17,11 +18,12 @@ export function ClientLogin() {
   const nav = useNavigate();
   const submit = async (e) => {
     e.preventDefault();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setMissing('أدخل بريدًا إلكترونيًا صحيحًا.'); return; }
+    const cleanEmail = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) { setMissing('أدخل بريدًا إلكترونيًا صحيحًا.'); return; }
     if (!password) { setMissing('أدخل كلمة المرور للمتابعة.'); return; }
-    const isAdmin = isAdminEmail(email);
+    const isAdmin = isAdminEmail(cleanEmail);
     const ok = await run(
-      () => localData(isAdmin ? '/admin/login' : '/client/login', { method: 'POST', body: { email, password } }),
+      () => localData(isAdmin ? '/admin/login' : '/client/login', { method: 'POST', body: { email: cleanEmail, password } }),
       'تم تسجيل الدخول بنجاح',
     );
     if (ok) nav(isAdmin ? '/admin' : '/portal', { replace: true });
@@ -41,7 +43,7 @@ export function ClientLogin() {
       <Field label="كلمة المرور">
         <PasswordInput autoComplete="current-password" required value={password} onChange={(e) => { setPassword(e.target.value); setMissing(''); }} />
       </Field>
-      <Button block loading={busy}>دخول</Button>
+      <Button block loading={busy}>تسجيل الدخول</Button>
       <ButtonLink to="/forgot-password" variant="ghost" size="small" block>هل نسيت كلمة المرور؟</ButtonLink>
     </AuthLayout>
   );
@@ -72,12 +74,32 @@ export function ClientLayout() {
     { to: '/portal/phases', label: 'المراحل', icon: 'phases', end: false },
     { to: '/portal/requests', label: 'المطلوب منك', icon: 'requests' },
     { to: '/portal/files', label: 'الملفات', icon: 'files' },
+  ];
+  const allNavItems = [
+    ...items,
     { to: '/portal/notifications', label: 'الإشعارات', icon: 'bell', badgeCount: unread },
   ];
   return (
     <div className="app-shell">
-      <AppSidebar items={items} label="التنقل" logoTo="/portal" onLogout={logout} />
+      <AppSidebar
+        items={items}
+        label="التنقل"
+        logoTo="/portal"
+        onLogout={logout}
+        workspace="بوابة المشاريع"
+        notificationTo="/portal/notifications"
+        unreadCount={unread}
+        notificationLabel="الإشعارات"
+      />
+      <MobileNav
+        items={allNavItems}
+        label="التنقل"
+        title="بوابة المشاريع"
+        logoTo="/portal"
+        onLogout={logout}
+      />
       <main className="app-main">
+        <WorkspaceHeader items={allNavItems} workspace="بوابة المشاريع" homeTo="/portal" />
         <Outlet context={{ setUnread }} />
       </main>
     </div>
@@ -92,8 +114,33 @@ export function Portal() {
   if (error) return <ErrorBox error={error} />;
   const { client, phases, requests, updates, files } = data;
   const open = requests.filter((r) => r.status === 'open');
+  const currentPhase = phases.find((phase) => phase.status === 'current');
   return (
-    <Page title={client.project_name} actions={<Chip tone="green" dot>مشروع نشط</Chip>}>
+    <Page
+      title={client.project_name}
+      sub={`مرحبًا، ${client.contact_name || client.name}`}
+      actions={<Chip tone="amber" dot live>مشروع نشط</Chip>}
+    >
+      <Card hl className="overview-progress-card overview-hero">
+        <div className="overview-progress-heading">
+          <div className="overview-progress-value">
+            <h2>التقدم العام</h2>
+            <strong className="stat">{client.progress}%</strong>
+          </div>
+          {currentPhase && (
+            <div className="overview-current-phase">
+              <span>المرحلة الحالية</span>
+              <Link to={`/portal/phases/${currentPhase.id}`} className="overview-phase-link">
+                <span>{currentPhase.name}</span>
+                <Icon name="next" className="size-4" />
+              </Link>
+            </div>
+          )}
+        </div>
+        <Bar value={client.progress} label="التقدم العام" />
+        {(client.start_date || client.end_date) && <span className="muted"><Range from={fmtDate(client.start_date)} to={fmtDate(client.end_date)} /></span>}
+      </Card>
+
       {client.brand_name && (
         <Card className="brand-identity">
           <div className="brand-identity-copy">
@@ -116,17 +163,9 @@ export function Portal() {
           </div>
         </Card>
       )}
-      <Card hl>
-        <div className="row between">
-          <h2>التقدم العام</h2>
-          <strong className="stat">{client.progress}%</strong>
-        </div>
-        <Bar value={client.progress} label="التقدم العام" />
-        {(client.start_date || client.end_date) && <span className="muted"><Range from={fmtDate(client.start_date)} to={fmtDate(client.end_date)} /></span>}
-      </Card>
 
       {open.length > 0 && (
-        <Card title={`مطلوب منك (${open.length})`} hl>
+        <Card title={`مطلوب منك (${open.length})`} hl className="overview-actions overview-actions-card">
           <List>
             {open.map((r) => (
               <Link key={r.id} to="/portal/requests" className="item">
@@ -138,8 +177,8 @@ export function Portal() {
         </Card>
       )}
 
-      <div className="cols">
-        <Card title="آخر التحديثات" actions={<Link to="/portal/updates" className="small">الكل</Link>}>
+      <div className="cols overview-columns">
+        <Card title="آخر التحديثات" actions={<Link to="/portal/updates" className="card-action-link">عرض الكل</Link>}>
           {updates.length ? (
             <List>
               {updates.map((u) => (
@@ -151,10 +190,11 @@ export function Portal() {
             </List>
           ) : <Empty>لا توجد تحديثات بعد.</Empty>}
         </Card>
-        <Card title="المراحل" actions={<Link to="/portal/phases" className="small">الكل</Link>}>
-          <List>
+        <Card title="المراحل" className="overview-phases" actions={<Link to="/portal/phases" className="card-action-link">عرض الكل</Link>}>
+          <List className="list phase-list">
             {phases.map((p) => (
-              <Link key={p.id} to={`/portal/phases/${p.id}`} className="item">
+              <Link key={p.id} to={`/portal/phases/${p.id}`} className={`item phase-step ${p.status}`}>
+                <span className="phase-step-node" aria-hidden="true" />
                 <div className="row between"><strong>{p.name}</strong><StatusChip s={p.status} /></div>
                 {p.total > 0 && <span className="muted small">{p.done} من {p.total} منجز</span>}
               </Link>
@@ -163,8 +203,8 @@ export function Portal() {
         </Card>
       </div>
 
-      <div className="cols">
-        <Card title="ملفات حديثة" actions={<Link to="/portal/files" className="small">الكل</Link>}>
+      <div className="cols overview-columns overview-secondary">
+        <Card title="ملفات حديثة" actions={<Link to="/portal/files" className="card-action-link">عرض الكل</Link>}>
           {files.length ? (
             <List>
               {files.map((f) => (
@@ -201,7 +241,7 @@ export function Updates() {
   if (error) return <ErrorBox error={error} />;
   return (
     <Page title="التحديثات" sub="كل ما حدث في مشروعك">
-      <Card>
+      <Card className="updates-list">
         {data.length ? (
           <List>
             {data.map((u) => (
@@ -352,7 +392,7 @@ export function Notifications() {
     <Page title="الإشعارات" actions={data.unread > 0 && <Button variant="secondary" size="small" onClick={markAll}>تعليم الكل كمقروء</Button>}>
       <Card>
         {data.items.length ? (
-          <List>
+          <List className="list notification-list">
             {data.items.map((n) => (
               <button key={n.id} onClick={() => open(n)} className={`notification-item${n.read ? '' : ' unread'}`}>
                 <div className="row between"><strong>{n.text}</strong><Chip tone={n.read ? 'gray' : 'blue'}>{NOTIF_TYPE[n.type] || n.type}</Chip></div>

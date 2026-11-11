@@ -43,7 +43,9 @@ export default function PhaseEditor({ phase, reload }) {
         </Field>
         <Field label="من"><input type="date" value={values.start_date} onChange={(event) => setValues({ ...values, start_date: event.target.value })} /></Field>
         <Field label="إلى"><input type="date" value={values.end_date} onChange={(event) => setValues({ ...values, end_date: event.target.value })} /></Field>
-        <Button size="small" loading={busy} disabled={busy}>حفظ المرحلة</Button>
+        <div className="flex items-end">
+          <Button size="small" loading={busy} disabled={busy}>حفظ المرحلة</Button>
+        </div>
       </form>
       <List>
         {phase.items.map((item) => (

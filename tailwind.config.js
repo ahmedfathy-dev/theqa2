@@ -26,6 +26,7 @@ export default {
     extend: {
       colors: {
         brand: scale('brand', [50, 100, 200, 500, 600, 700, 800]),
+        warm: scale('warm', [50, 100, 200, 300, 400, 500, 600, 700]),
         ink: { DEFAULT: rgb('ink'), soft: rgb('ink-soft') },
         muted: rgb('muted'),
         surface: { DEFAULT: rgb('surface'), sunken: rgb('surface-sunken') },
