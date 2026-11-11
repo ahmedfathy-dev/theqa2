@@ -344,6 +344,7 @@ export function Bar({ value = 0, label, className = '' }) {
           ease: [0.25, 0.1, 0.25, 1],
         }}
       >
+        <span className="bar-gleam" aria-hidden="true" />
         {pct > 0 && <span className="bar-glow" aria-hidden="true" />}
       </m.div>
     </div>
