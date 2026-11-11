@@ -1,11 +1,25 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { readState } from './localData.js';
 import { ClientLogin, ClientPasswordRecovery, ClientLayout, Portal, Updates, UpdateDetail, Phases, PhaseDetail, Requests, Files, Notifications } from './features/client/index.jsx';
 import { AdminLogin, AdminPasswordRecovery, AdminLayout, Clients, NewClient, AdminClient, Overview, Schedule, AdminRequests, AdminComments, Comms, AdminFiles, Settings } from './features/admin/index.jsx';
+
+function RootRedirect() {
+  try {
+    const state = readState();
+    if (state?.session?.admin) {
+      return <Navigate to="/admin" replace />;
+    }
+    if (state?.session?.clientId) {
+      return <Navigate to="/portal" replace />;
+    }
+  } catch {}
+  return <Navigate to="/login" replace />;
+}
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/portal" replace />} />
+      <Route path="/" element={<RootRedirect />} />
       <Route path="/login" element={<ClientLogin />} />
       <Route path="/forgot-password" element={<ClientPasswordRecovery />} />
       <Route path="/portal" element={<ClientLayout />}>
