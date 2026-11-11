@@ -810,49 +810,109 @@
   .phase-step + .phase-step::before { @apply inset-x-0; }
 
   .tool-overview {
-    @apply grid min-w-0 gap-6 px-6 py-7 text-white sm:px-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-center;
-    border-radius: 1.125rem;
-    background: linear-gradient(135deg, rgb(var(--brand-800)) 0%, rgb(var(--brand-700)) 50%, rgb(var(--brand-600)) 100%);
-    box-shadow: 0 4px 16px -4px rgb(var(--brand-800) / 0.3);
+    @apply relative grid min-w-0 gap-6 overflow-hidden text-white;
+    padding: 1.75rem 2rem;
+    border-radius: 1.375rem;
+    background: linear-gradient(135deg, #183C31 0%, #13332A 45%, #0D261F 100%);
+    border: 1px solid rgb(var(--warm-300) / 0.22);
+    box-shadow: 0 12px 32px -8px rgb(10 32 25 / 0.45), 0 1px 3px rgb(0 0 0 / 0.1);
+  }
+  @media (min-width: 1024px) {
+    .tool-overview {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.85fr);
+      align-items: center;
+      gap: 2rem;
+    }
   }
   .tool-overview-hero {
     position: relative;
-    overflow: hidden;
+  }
+  .tool-overview-hero::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: -4rem;
+    top: -4rem;
+    width: 16rem;
+    height: 16rem;
+    background: radial-gradient(circle, rgb(var(--brand-500) / 0.16) 0%, transparent 70%);
+    pointer-events: none;
   }
   .tool-overview-hero::after {
     content: '';
     position: absolute;
     inset-inline-end: -3rem;
     bottom: -3rem;
-    width: 12rem;
-    height: 12rem;
-    background: radial-gradient(circle, rgb(var(--warm-300) / 0.12) 0%, transparent 70%);
+    width: 16rem;
+    height: 16rem;
+    background: radial-gradient(circle, rgb(var(--warm-300) / 0.15) 0%, transparent 70%);
     pointer-events: none;
   }
-  .tool-stats-item {
-    transition: transform 200ms var(--ease-out);
+  .tool-overview-copy {
+    @apply relative z-[1] flex flex-col gap-2.5;
   }
-  .tool-stats-item:hover {
-    transform: translateY(-2px);
+  .tool-overview-badge {
+    @apply inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold tracking-wide;
+    color: rgb(var(--warm-300));
+    background-color: rgb(var(--warm-300) / 0.12);
+    border: 1px solid rgb(var(--warm-300) / 0.25);
   }
-  .tool-overview-copy { @apply flex flex-col gap-2; }
-  .tool-overview-copy h2 { @apply text-xl font-semibold text-white; }
-  .tool-overview-copy p { @apply max-w-[42ch] text-sm leading-7 text-white/80; }
+  .tool-overview-copy h2 {
+    @apply text-xl font-bold text-white sm:text-2xl;
+    letter-spacing: -0.01em;
+  }
+  .tool-overview-copy p {
+    @apply max-w-[44ch] text-sm leading-relaxed text-white/75;
+  }
+
+  /* Frosted Glass Stat Tiles */
   .tool-overview-stats {
-    @apply grid grid-cols-3 gap-4 border-t pt-5 lg:border-s lg:border-t-0 lg:ps-7 lg:pt-0;
-    border-color: rgb(255 255 255 / 0.15);
+    @apply relative z-[1] grid grid-cols-1 gap-3 sm:grid-cols-3;
   }
-  .tool-overview-stats > div {
-    @apply flex min-w-0 flex-col gap-1.5;
-    padding-inline-start: 0.75rem;
-    border-inline-start: 2px solid rgb(255 255 255 / 0.12);
+  .tool-stat-card {
+    @apply flex flex-col justify-between gap-3 rounded-2xl p-4;
+    background: rgb(255 255 255 / 0.06);
+    border: 1px solid rgb(255 255 255 / 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: background-color 220ms var(--ease-out), border-color 220ms var(--ease-out), transform 220ms var(--ease-out), box-shadow 220ms var(--ease-out);
   }
-  .tool-overview-stats > div:first-child {
-    border-inline-start: none;
-    padding-inline-start: 0;
+  .tool-stat-card:hover {
+    background: rgb(255 255 255 / 0.1);
+    border-color: rgb(var(--warm-300) / 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px -4px rgb(0 0 0 / 0.25);
   }
-  .tool-overview-stats strong { @apply text-2xl font-semibold tabular-nums text-white; }
-  .tool-overview-stats span { @apply text-xs leading-5 text-white/80; }
+  .tool-stat-header {
+    @apply flex items-center gap-2;
+  }
+  .tool-stat-icon {
+    @apply grid size-7 place-items-center rounded-lg;
+    background-color: rgb(255 255 255 / 0.08);
+    color: rgb(255 255 255 / 0.85);
+  }
+  .tool-stat-icon.clients {
+    color: rgb(var(--brand-200));
+    background-color: rgb(var(--brand-500) / 0.2);
+  }
+  .tool-stat-icon.requests {
+    color: rgb(var(--warm-300));
+    background-color: rgb(var(--warm-300) / 0.18);
+  }
+  .tool-stat-icon.comments {
+    color: rgb(255 255 255 / 0.9);
+    background-color: rgb(255 255 255 / 0.12);
+  }
+  .tool-stat-label {
+    @apply text-xs font-medium text-white/75 truncate;
+  }
+  .tool-stat-number {
+    @apply text-stat font-extrabold tabular-nums text-white;
+    letter-spacing: -0.02em;
+  }
+  .tool-stat-number.highlight {
+    color: rgb(var(--warm-300));
+    text-shadow: 0 0 12px rgb(var(--warm-300) / 0.35);
+  }
   .client-list-search input { @apply bg-white; }
 
   /* ---- schedule ---- */

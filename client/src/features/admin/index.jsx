@@ -106,13 +106,35 @@ export function Clients() {
     <Page title="العملاء" sub="نظرة على المشاريع ومتابعة ما يحتاج إلى إجراء" actions={<ButtonLink to="/admin/new">عميل جديد</ButtonLink>}>
       <section className="tool-overview tool-overview-hero">
         <div className="tool-overview-copy">
+          <span className="tool-overview-badge">
+            <Icon name="clients" className="size-3.5" />
+            <span>لوحة المتابعة الشاملة</span>
+          </span>
           <h2>مساحة إدارة المشاريع</h2>
-          <p>تابع تقدم العملاء والطلبات والتعليقات التي تنتظر المتابعة.</p>
+          <p>تابع تقدم مشاريع العملاء والطلبات المفتوحة والتعليقات المباشرة أولاً بأول في دار شذرة.</p>
         </div>
         <div className="tool-overview-stats" aria-label="ملخص العمل">
-          <div className="tool-stats-item"><strong>{data.length}</strong><span>عميل</span></div>
-          <div className="tool-stats-item"><strong>{openRequests}</strong><span>طلب مفتوح</span></div>
-          <div className="tool-stats-item"><strong>{waitingComments}</strong><span>تعليق ينتظر الرد</span></div>
+          <div className="tool-stat-card">
+            <div className="tool-stat-header">
+              <span className="tool-stat-icon clients"><Icon name="clients" className="size-4" /></span>
+              <span className="tool-stat-label">إجمالي العملاء</span>
+            </div>
+            <strong className="tool-stat-number">{data.length}</strong>
+          </div>
+          <div className="tool-stat-card">
+            <div className="tool-stat-header">
+              <span className="tool-stat-icon requests"><Icon name="requests" className="size-4" /></span>
+              <span className="tool-stat-label">طلبات مفتوحة</span>
+            </div>
+            <strong className="tool-stat-number highlight">{openRequests}</strong>
+          </div>
+          <div className="tool-stat-card">
+            <div className="tool-stat-header">
+              <span className="tool-stat-icon comments"><Icon name="updates" className="size-4" /></span>
+              <span className="tool-stat-label">بانتظار الرد</span>
+            </div>
+            <strong className="tool-stat-number">{waitingComments}</strong>
+          </div>
         </div>
       </section>
       <div className="client-list-search">
