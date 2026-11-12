@@ -18,7 +18,8 @@ const relativeTimestamp = (days, hour = 12) => {
   return date.toISOString();
 };
 const id = () => globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-const normalizeEmail = (email) => String(email || '').trim().toLowerCase();
+// يزيل المسافات والرموز غير المرئية (اتجاه الكتابة RTL/LTR) التي تأتي من النسخ واللصق.
+const normalizeEmail = (email) => String(email || '').replace(/[​-‏‪-‮⁦-⁩﻿]/g, '').trim().toLowerCase();
 const isEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const MAX_CHAT_FILES = 3;
 const MAX_CHAT_BYTES = 1024 * 1024;
@@ -32,11 +33,29 @@ export function isAdminEmail(email) {
   } catch {}
   return (
     norm === adminEmail ||
-    norm === 'admin@example.test' ||
-    norm === 'admin@example.com' ||
-    norm.startsWith('admin@') ||
-    norm === 'admin'
+    norm === 'admin@example.test'
   );
+}
+
+// دخول موحّد: الدور يُحدَّد من البريد (إدارة أو عميل) بغض النظر عن صفحة الدخول المستخدمة.
+function authenticate(state, body) {
+  const email = normalizeEmail(body.email);
+  const password = String(body.password || '');
+  if (!isEmail(email) || !password) fail('أدخل بريدًا إلكترونيًا صحيحًا وكلمة المرور', 400);
+  const bad = () => fail('البريد الإلكتروني أو كلمة المرور غير صحيحة', 401);
+  if (isAdminEmail(email)) {
+    if (password !== state.auth.admin.password) bad();
+    state.session.admin = true;
+    state.session.clientId = null;
+    saveState(state);
+    return { ok: true, role: 'admin', email };
+  }
+  const account = state.auth.accounts[email];
+  if (!account || account.password !== password) bad();
+  state.session.clientId = account.clientId;
+  state.session.admin = false;
+  saveState(state);
+  return { ok: true, role: 'client', email };
 }
 
 export function defaultProjectSections(projectName = 'المشروع') {
@@ -299,7 +318,7 @@ function seedDemoProject(state) {
     const demoProject = {
       id: 'project-demo-shathrah',
       client_id: client.id,
-      name: 'هوية ومتجر دار شذرة الفاخر',
+      name: 'هوية ومتجر دار شذرة',
       description: 'منصة تسوق رقمية راقية ومتجر إلكتروني فاخر لمنتجات دار شذرة الطبيعية والعطور الحرفية مع بوابات دفع آمنة وتجربة تصفح موشاة بالذهب الدافئ.',
       production_url: 'https://shathrah.test',
       status: 'in_progress',
@@ -308,7 +327,7 @@ function seedDemoProject(state) {
       end_date: relativeDate(30),
       created_at: relativeTimestamp(-14),
       updated_at: relativeTimestamp(-1),
-      sections: defaultProjectSections('هوية ومتجر دار شذرة الفاخر'),
+      sections: defaultProjectSections('هوية ومتجر دار شذرة'),
     };
     state.projects.push(demoProject);
 
@@ -505,6 +524,18 @@ export function readState() {
       migrated = true;
     }
     state.auth.passwordResets ||= {};
+    // الأدوار منفصلة تمامًا: بريد الأدمن لا يكون أبدًا حساب عميل، وبريد عميل لا يكون أبدًا بريد الأدمن.
+    {
+      let adminKey = normalizeEmail(state.auth.admin.email);
+      if ((state.clients || []).some((c) => normalizeEmail(c.email) === adminKey) && adminKey !== DEMO_ADMIN.email) {
+        state.auth.admin.email = DEMO_ADMIN.email;
+        adminKey = DEMO_ADMIN.email;
+        migrated = true;
+      }
+      for (const key of [adminKey, DEMO_ADMIN.email]) {
+        if (state.auth.accounts[key]) { delete state.auth.accounts[key]; migrated = true; }
+      }
+    }
     state.projects ||= [];
     state.inline_comments ||= [];
     // Clean up legacy mock clients from previous versions
@@ -714,8 +745,17 @@ function clientOverview(state, client) {
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
     .slice(0, 5);
 
+  const primaryProject = clientProjects[0] || null;
+  const enrichedClient = {
+    ...client,
+    project_name: primaryProject?.name || client.project_name,
+    production_url: primaryProject?.production_url || client.production_url || '',
+    progress: primaryProject ? primaryProject.progress : client.progress,
+    project_id: primaryProject?.id || null,
+  };
+
   return {
-    client,
+    client: enrichedClient,
     projects: clientProjects,
     recentComments,
     phases,
@@ -730,11 +770,17 @@ function clientOverview(state, client) {
 function adminClients(state) {
   const today = new Date().toISOString().slice(0, 10);
   return state.clients.map((client) => {
+    const project = (state.projects || []).find((p) => p.client_id === client.id);
     const openRequests = state.requests.filter((row) => row.client_id === client.id && row.status === 'open').length;
     const waitingComments = state.comments.filter((row) => row.client_id === client.id && row.needs_reply).length;
-    const late = client.end_date && client.end_date < today && client.progress < 100;
+    const effectiveProgress = project ? project.progress : client.progress;
+    const late = client.end_date && client.end_date < today && effectiveProgress < 100;
     return {
       ...client,
+      project_name: project?.name || client.project_name,
+      production_url: project?.production_url || client.production_url || '',
+      progress: effectiveProgress,
+      project_id: project?.id || null,
       open_requests: openRequests,
       waiting_comments: waitingComments,
       health: late ? 'late' : openRequests || waitingComments ? 'wait' : 'ok',
@@ -746,8 +792,18 @@ function adminClients(state) {
 function adminClient(state, clientId) {
   const client = state.clients.find((row) => row.id === clientId);
   if (!client) fail('العميل غير موجود', 404);
+  const clientProjects = (state.projects || []).filter((p) => p.client_id === clientId);
+  const primaryProject = clientProjects[0] || null;
+  const enrichedClient = {
+    ...client,
+    project_name: primaryProject?.name || client.project_name,
+    production_url: primaryProject?.production_url || client.production_url || '',
+    progress: primaryProject ? primaryProject.progress : client.progress,
+    project_id: primaryProject?.id || null,
+  };
   return {
-    client,
+    client: enrichedClient,
+    projects: clientProjects,
     phases: state.phases.filter((phase) => phase.client_id === clientId)
       .sort((a, b) => a.sort - b.sort)
       .map((phase) => ({ ...phase, items: state.items.filter((item) => item.phase_id === phase.id).sort((a, b) => a.sort - b.sort) })),
@@ -774,45 +830,14 @@ export async function localData(path, { method = 'GET', body = {} } = {}) {
   if (route === 'admin/password-reset' && method === 'POST') return requestPasswordReset(state, 'admin', body);
   if (route === 'admin/password-reset/confirm' && method === 'POST') return confirmPasswordReset(state, 'admin', body);
 
-  if (route === 'client/login' && method === 'POST') {
-    const email = normalizeEmail(body.email);
-    const password = String(body.password || '');
-    if (!isEmail(email) || !password) fail('أدخل بريدًا إلكترونيًا صحيحًا وكلمة المرور', 400);
-    if (isAdminEmail(email)) {
-      fail('البريد الإلكتروني أو كلمة المرور غير صحيحة', 401);
-    }
-    let account = state.auth.accounts[email];
-    if (!account) {
-      const demoClient = state.clients.find((client) => client.id === 'demo-client') || state.clients[0];
-      if (!demoClient) fail('لا يوجد حساب عميل تجريبي', 404);
-      account = { email, password, clientId: demoClient.id };
-      state.auth.accounts[email] = account;
-    } else if (account.password !== password) {
-      fail('البريد الإلكتروني أو كلمة المرور غير صحيحة', 401);
-    }
-    state.session.clientId = account.clientId;
-    state.session.admin = false;
-    saveState(state);
-    return { ok: true, role: 'client' };
+  if ((route === 'client/login' || route === 'admin/login' || route === 'auth/login') && method === 'POST') {
+    return authenticate(state, body);
   }
   if (route === 'client/logout' && method === 'POST') {
     state.session.clientId = null;
     state.session.admin = false;
     saveState(state);
     return { ok: true };
-  }
-  if (route === 'admin/login' && method === 'POST') {
-    const norm = normalizeEmail(body.email);
-    const adminEmail = normalizeEmail(state.auth?.admin?.email || 'admin@example.test');
-    const validEmail = norm === adminEmail || norm === 'admin@example.test' || norm === 'admin@example.com' || norm.startsWith('admin@') || norm === 'admin';
-    const validPassword = body.password === state.auth.admin.password;
-    if (!validEmail || !validPassword) {
-      fail('البريد الإلكتروني أو كلمة المرور غير صحيحة', 401);
-    }
-    state.session.admin = true;
-    state.session.clientId = null;
-    saveState(state);
-    return { ok: true, role: 'admin' };
   }
   if (route === 'admin/logout' && method === 'POST') {
     state.session.admin = false;
@@ -1008,6 +1033,11 @@ export async function localData(path, { method = 'GET', body = {} } = {}) {
       };
       state.projects ||= [];
       state.projects.push(newProject);
+      targetClient.project_name = name;
+      targetClient.production_url = productionUrl;
+      targetClient.progress = newProject.progress;
+      if (newProject.start_date) targetClient.start_date = newProject.start_date;
+      if (newProject.end_date) targetClient.end_date = newProject.end_date;
       addNotification(state, targetClient.id, {
         type: 'phase',
         text: `تم تدشين مشروعك الجديد «${name}» - يمكنك الآن معاينته وإبداء الملاحظات`,
@@ -1048,6 +1078,16 @@ export async function localData(path, { method = 'GET', body = {} } = {}) {
       if (body.start_date !== undefined) project.start_date = body.start_date;
       if (body.end_date !== undefined) project.end_date = body.end_date;
       project.updated_at = timestamp();
+      if (project.client_id) {
+        const cl = state.clients.find((c) => c.id === project.client_id);
+        if (cl) {
+          if (body.name !== undefined) cl.project_name = project.name;
+          if (body.production_url !== undefined) cl.production_url = project.production_url;
+          if (body.progress !== undefined) cl.progress = project.progress;
+          if (body.start_date !== undefined) cl.start_date = project.start_date;
+          if (body.end_date !== undefined) cl.end_date = project.end_date;
+        }
+      }
       saveState(state);
       result = { ok: true, project };
     } else if (parts[1] === 'projects' && parts.length === 3 && method === 'DELETE') {
@@ -1107,12 +1147,15 @@ export async function localData(path, { method = 'GET', body = {} } = {}) {
         fail('هذا البريد مرتبط بحساب عميل آخر');
       }
       if (state.auth.accounts[email]) fail('هذا البريد مرتبط بحساب عميل آخر');
+      if (isAdminEmail(email)) fail('هذا البريد مخصص لحساب الإدارة ولا يمكن استخدامه لعميل');
       const clientId = id();
+      const productionUrl = String(body.production_url || '').trim();
       const client = {
         id: clientId,
         username: `client-${Math.random().toString(36).slice(2, 10)}`,
         name,
         project_name: projectName,
+        production_url: productionUrl,
         contact_name: body.contact_name || '',
         email,
         telegram_chat: body.telegram_chat || '',
@@ -1124,6 +1167,22 @@ export async function localData(path, { method = 'GET', body = {} } = {}) {
         created_at: timestamp(),
       };
       state.clients.push(client);
+      state.projects ||= [];
+      const newProjectId = id();
+      state.projects.push({
+        id: newProjectId,
+        client_id: clientId,
+        name: projectName,
+        description: `مشروع ${projectName} المخصص لشركة ${name}`,
+        production_url: productionUrl,
+        status: 'in_progress',
+        progress: 0,
+        start_date: body.start_date || relativeDate(0),
+        end_date: body.end_date || relativeDate(30),
+        created_at: timestamp(),
+        updated_at: timestamp(),
+        sections: defaultProjectSections(projectName),
+      });
       state.auth.clients[clientId] = { email, password: 'client123' };
       state.auth.accounts[email] = { ...state.auth.clients[clientId], clientId };
       DEFAULT_PHASES.forEach((phaseName, index) => state.phases.push({
@@ -1131,7 +1190,7 @@ export async function localData(path, { method = 'GET', body = {} } = {}) {
         status: index === 0 ? 'current' : 'next', start_date: '', end_date: '',
       }));
       saveState(state);
-      result = { id: clientId };
+      result = { id: clientId, project_id: newProjectId };
     } else if (parts[1] === 'clients' && parts[2] && parts.length === 3 && method === 'GET') {
       result = adminClient(state, parts[2]);
     } else if (parts[1] === 'clients' && parts[2] && parts.length === 3 && method === 'PATCH') {

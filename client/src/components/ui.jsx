@@ -1,5 +1,5 @@
 import { cloneElement, isValidElement, useEffect, useId, useRef, useState } from 'react';
-import { flushSync } from 'react-dom';
+import { createPortal, flushSync } from 'react-dom';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, m, useReducedMotion } from 'motion/react';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
@@ -9,6 +9,7 @@ import {
   Bell,
   Check,
   ChevronDown,
+  ChevronsRight,
   ClipboardList,
   Clock3,
   Copy,
@@ -25,6 +26,8 @@ import {
   MessageSquarePlus,
   Minimize2,
   Monitor,
+  PanelLeftClose,
+  PanelLeftOpen,
   Paperclip,
   Pencil,
   Plus,
@@ -72,11 +75,14 @@ const ICONS = {
   settings: { glyph: Settings },
   add: { glyph: Plus },
   chevron: { glyph: ChevronDown },
+  'chevrons-right': { glyph: ChevronsRight },
   pencil: { glyph: Pencil },
   external: { glyph: ExternalLink, flip: true },
   monitor: { glyph: Monitor },
   tablet: { glyph: Tablet },
   smartphone: { glyph: Smartphone },
+  'panel-open': { glyph: PanelLeftOpen },
+  'panel-close': { glyph: PanelLeftClose },
   maximize: { glyph: Maximize2 },
   minimize: { glyph: Minimize2 },
   'comment-add': { glyph: MessageSquarePlus },
@@ -121,7 +127,7 @@ export const StatusChip = ({ s }) => <Chip tone={STATUS_TONE[s]} dot live={s ===
 // ---------- buttons ----------
 // Variants: primary, secondary, outline, ghost, danger, success. Sizes: medium (44px), small (40px).
 // `icon` makes a square icon-only button: always pass aria-label.
-const BUTTON_VARIANTS = { primary: 'btn-primary', secondary: 'btn-secondary', outline: 'btn-outline', ghost: 'btn-ghost', quiet: 'btn-ghost', danger: 'btn-danger', success: 'btn-success' };
+const BUTTON_VARIANTS = { primary: 'btn-primary', secondary: 'btn-secondary', outline: 'btn-outline', ghost: 'btn-ghost', quiet: 'btn-ghost', link: 'btn-link', danger: 'btn-danger', success: 'btn-success' };
 const BUTTON_SIZES = { medium: 'btn-md', small: 'btn-sm' };
 const buttonClass = ({ variant, size, icon, block, className }) =>
   cx('btn', BUTTON_VARIANTS[variant] || BUTTON_VARIANTS.primary, BUTTON_SIZES[size] || BUTTON_SIZES.medium, icon && 'btn-icon', block && 'btn-block', className);
@@ -145,6 +151,38 @@ export function Button({ variant = 'primary', size = 'medium', icon = false, blo
 
 export function ButtonLink({ to, variant = 'primary', size = 'medium', icon = false, block = false, className = '', children, ...props }) {
   return <Link to={to} className={buttonClass({ variant, size, icon, block, className })} {...props}>{children}</Link>;
+}
+
+// Link-styled as a button (opens a URL outside the app). Same shape/variants as Button.
+export function ExternalButton({ href, variant = 'secondary', size = 'small', block = false, className = '', children, ...props }) {
+  return (
+    <a href={href} target="_blank" rel="noreferrer noopener" className={buttonClass({ variant, size, block, className })} {...props}>
+      {children}
+      <Icon name="external" className="size-3.5" />
+    </a>
+  );
+}
+
+// Renders children at document.body so dialogs always stack above fullscreen layers and animated ancestors.
+export const Overlay = ({ children }) => createPortal(children, document.body);
+
+// Icon-only close button used by dialogs and overlays.
+export function CloseButton({ onClick, label = 'إغلاق', className = '' }) {
+  return <Button type="button" variant="ghost" size="small" icon aria-label={label} className={className} onClick={onClick}><Icon name="close" className="size-4" /></Button>;
+}
+
+// Segmented radio-style switcher (e.g. desktop / tablet / mobile).
+export function SegmentedControl({ options, value, onChange, label }) {
+  return (
+    <div className="segmented" role="radiogroup" aria-label={label}>
+      {options.map((o) => (
+        <button key={o.value} type="button" role="radio" aria-checked={value === o.value} aria-label={o.label} title={o.label} className={cx('segmented-item', value === o.value && 'active')} onClick={() => onChange(o.value)}>
+          {o.icon && <Icon name={o.icon} className="size-4" />}
+          <span className="segmented-label">{o.label}</span>
+        </button>
+      ))}
+    </div>
+  );
 }
 
 // ---------- forms ----------
@@ -476,8 +514,27 @@ export function AppSidebar({
   notificationLabel = 'الإشعارات',
 }) {
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    try { return localStorage.getItem('sidebar-collapsed') === '1'; } catch { return false; }
+  });
+  const toggle = () => setCollapsed((v) => {
+    const next = !v;
+    try { localStorage.setItem('sidebar-collapsed', next ? '1' : '0'); } catch { /* storage unavailable */ }
+    return next;
+  });
   return (
-    <aside className="app-sidebar">
+    <aside className={cx('app-sidebar', collapsed && 'is-collapsed')}>
+      <button
+        type="button"
+        className="sidebar-toggle"
+        onClick={toggle}
+        aria-expanded={!collapsed}
+        aria-label={collapsed ? 'فتح القائمة الجانبية' : 'طي القائمة الجانبية'}
+        title={collapsed ? 'فتح القائمة' : 'طي القائمة'}
+      >
+        <Icon name="chevrons-right" className="size-4" />
+      </button>
+      <div className="sidebar-inner">
       <div className="sidebar-header-area">
         <Link to={logoTo} className="sidebar-brand" aria-label={`${workspace}، الصفحة الرئيسية`}>
           <Logo variant="white" className="sidebar-logo" />
@@ -532,6 +589,7 @@ export function AppSidebar({
         </button>
       </div>
       <LogoutDialog open={logoutOpen} onClose={() => setLogoutOpen(false)} onLogout={onLogout} />
+      </div>
     </aside>
   );
 }
@@ -935,9 +993,10 @@ export function useAction() {
     setBusy(true);
     setErr('');
     try {
-      await fn();
-      if (successMessage) {
-        gooeyToast.success(successMessage, {
+      const out = await fn();
+      const message = typeof successMessage === 'function' ? successMessage(out) : successMessage;
+      if (message) {
+        gooeyToast.success(message, {
           fillColor: '#ffffff',
           borderColor: '#dce6e9',
           preset: 'subtle',

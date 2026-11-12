@@ -1,61 +1,28 @@
+import LoginForm from '../auth/LoginForm.jsx';
 import { useEffect, useState } from 'react';
-import { Outlet, useLocation, useNavigate, useOutletContext, useParams, Link } from 'react-router-dom';
-import { isAdminEmail, localData, useLocalData } from '../../localData.js';
+import { Outlet, useNavigate, useOutletContext, useParams, Link } from 'react-router-dom';
+import { localData, useLocalData } from '../../localData.js';
 import { fmtDate, fmtShort, fmtTime, KIND, NOTIF_TYPE } from '../../format.js';
-import { AppSidebar, AuthLayout, Bar, Button, ButtonLink, Card, ChatPanel, Chip, CommentThread, Empty, ErrorBox, Field, FormError, Icon, LinkCard, List, Loading, Page, PasswordInput, Range, StatusChip, Switch, useAction, WorkspaceHeader } from '../../components/ui.jsx';
+import { AppSidebar, Bar, Button, ButtonLink, ExternalButton, Card, ChatPanel, Chip, CommentThread, Empty, ErrorBox, Icon, LinkCard, List, Loading, Page, Range, StatusChip, Switch, WorkspaceHeader } from '../../components/ui.jsx';
 import MobileNav from '../../components/MobileNav.jsx';
 import FeatureRequestCard from './components/RequestCard.jsx';
 import PasswordRecovery from '../auth/PasswordRecovery.jsx';
 
 // ---------- الدخول ----------
 export function ClientLogin() {
-  const [email, setEmail] = useState('client@example.test');
-  const [password, setPassword] = useState('client123');
-  const [missing, setMissing] = useState('');
-  const { state } = useLocation();
-  const [loggedOut] = useState(Boolean(state?.loggedOut));
-  const { busy, err, run } = useAction();
-  const nav = useNavigate();
-  const submit = async (e) => {
-    e.preventDefault();
-    const cleanEmail = email.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) { setMissing('أدخل بريدًا إلكترونيًا صحيحًا.'); return; }
-    if (!password) { setMissing('أدخل كلمة المرور للمتابعة.'); return; }
-    const isAdmin = isAdminEmail(cleanEmail);
-    let authRes = null;
-    const ok = await run(
-      async () => {
-        authRes = await localData(isAdmin ? '/admin/login' : '/client/login', { method: 'POST', body: { email: cleanEmail, password } });
-        return authRes;
-      },
-      'تم تسجيل الدخول بنجاح',
-    );
-    if (ok) {
-      if (authRes?.role === 'admin' || isAdmin) {
-        nav('/admin', { replace: true });
-      } else {
-        nav('/portal', { replace: true });
-      }
-    }
-  };
   return (
-    <AuthLayout
-      brand="بوابة المشاريع"
-      heading="متابعة مشروعك"
-      description="سجّل دخولك لمتابعة تقدم المشروع وقراراته وتحديثاته."
-      points={['تحديثات المشروع أولا بأول', 'المراحل والجدول الزمني', 'الطلبات والملفات في مكان واحد']}
-      notice={loggedOut ? 'تم تسجيل الخروج بنجاح' : null}
-      onSubmit={submit}
-    >
-      <Field label="البريد الإلكتروني" error={missing || err}>
-        <input type="email" className="ltr" dir="ltr" autoFocus autoComplete="email" required value={email} onChange={(e) => { setEmail(e.target.value); setMissing(''); }} placeholder="client@example.test" />
-      </Field>
-      <Field label="كلمة المرور">
-        <PasswordInput autoComplete="current-password" required value={password} onChange={(e) => { setPassword(e.target.value); setMissing(''); }} />
-      </Field>
-      <Button block loading={busy}>تسجيل الدخول</Button>
-      <ButtonLink to="/forgot-password" variant="ghost" size="small" block>هل نسيت كلمة المرور؟</ButtonLink>
-    </AuthLayout>
+    <LoginForm
+      emailLabel="البريد الإلكتروني"
+      placeholder="client@example.test"
+      submitLabel="تسجيل الدخول"
+      forgotTo="/forgot-password"
+      layout={{
+        brand: 'بوابة المشاريع',
+        heading: 'متابعة مشروعك',
+        description: 'سجّل دخولك لمتابعة تقدم المشروع وقراراته وتحديثاته.',
+        points: ['تحديثات المشروع أولا بأول', 'المراحل والجدول الزمني', 'الطلبات والملفات في مكان واحد'],
+      }}
+    />
   );
 }
 
@@ -134,7 +101,27 @@ export function Portal() {
     <Page
       title={client.project_name}
       sub={`مرحبًا، ${client.contact_name || client.name} — أهلاً بك في بوابة متابعة المشاريع`}
-      actions={<Chip tone="amber" dot live>مشروع نشط</Chip>}
+      actions={
+        <div className="row gap-2 items-center">
+          <Chip tone={client.progress === 100 ? 'green' : 'amber'} dot live>
+            {client.progress === 100 ? 'مشروع مكتمل' : 'مشروع نشط'}
+          </Chip>
+          {client.production_url && (
+            <ExternalButton href={client.production_url}>زيارة الموقع الحي</ExternalButton>
+          )}
+          {projects.length > 0 && (
+            <ButtonLink
+              to={`/portal/projects/${client.project_id || projects[0]?.id}`}
+              variant="primary"
+              size="small"
+              className="gap-1.5"
+            >
+              <Icon name="pencil" className="size-3.5" />
+              <span>معاينة ومراجعة المشروع</span>
+            </ButtonLink>
+          )}
+        </div>
+      }
     >
       {/* Metrics Summary Bar */}
       <div className="portal-metrics-grid">
@@ -172,7 +159,7 @@ export function Portal() {
                 <div>
                   <div className="project-card-header">
                     <div className="project-card-title-wrap">
-                      <h3 className="project-card-title">{p.name}</h3>
+                      <h3 className="project-card-title"><Link to={`/portal/projects/${p.id}`} className="project-card-link">{p.name}</Link></h3>
                       {p.production_url && (
                         <a
                           href={p.production_url}
@@ -234,18 +221,31 @@ export function Portal() {
       <Card hl className="overview-progress-card overview-hero">
         <div className="overview-progress-heading">
           <div className="overview-progress-value">
-            <h2>التقدم العام</h2>
+            <h2>التقدم العام للمشروع</h2>
             <strong className="stat">{client.progress}%</strong>
           </div>
-          {currentPhase && (
-            <div className="overview-current-phase">
-              <span>المرحلة الحالية</span>
-              <Link to={`/portal/phases/${currentPhase.id}`} className="overview-phase-link">
-                <span>{currentPhase.name}</span>
-                <Icon name="next" className="size-4" />
-              </Link>
-            </div>
-          )}
+          <div className="row gap-3 items-center">
+            {client.production_url && (
+              <a
+                href={client.production_url}
+                target="_blank"
+                rel="noreferrer"
+                className="project-card-url bg-surface-sunken px-3 py-1.5 rounded-xl border border-line"
+              >
+                <Icon name="external" className="size-3" />
+                <span>{client.production_url}</span>
+              </a>
+            )}
+            {currentPhase && (
+              <div className="overview-current-phase">
+                <span>المرحلة الحالية</span>
+                <Link to={`/portal/phases/${currentPhase.id}`} className="overview-phase-link">
+                  <span>{currentPhase.name}</span>
+                  <Icon name="next" className="size-4" />
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
         <Bar value={client.progress} label="التقدم العام" />
         {(client.start_date || client.end_date) && <span className="muted"><Range from={fmtDate(client.start_date)} to={fmtDate(client.end_date)} /></span>}
@@ -529,376 +529,5 @@ function useOutletCtx() {
   return useOutletContext();
 }
 
-// ---------- تفاصيل المشروع والمراجعة التفاعلية ----------
-export function ProjectDetail() {
-  const { id } = useParams();
-  const { data, error, loading, reload } = useLocalData(`/client/projects/${id}`);
-  const [viewport, setViewport] = useState('desktop');
-  const [fullscreen, setFullscreen] = useState(false);
-  const [commentModalSection, setCommentModalSection] = useState(null);
-  const [newCommentBody, setNewCommentBody] = useState('');
-  const [replyTargetId, setReplyTargetId] = useState(null);
-  const [replyBody, setReplyBody] = useState('');
-  const { busy, err, run } = useAction();
-
-  if (loading) return <Loading />;
-  if (error) return <ErrorBox error={error} />;
-
-  const { project, comments = [] } = data;
-  const sections = project.sections || [];
-
-  const handleCreateComment = async (e) => {
-    e.preventDefault();
-    if (!newCommentBody.trim() || !commentModalSection) return;
-    const ok = await run(
-      () => localData(`/client/projects/${project.id}/comments`, {
-        method: 'POST',
-        body: { section_id: commentModalSection.id, content: newCommentBody.trim() },
-      }),
-      'تم إرسال ملاحظتك لفريق العمل بنجاح'
-    );
-    if (ok) {
-      setNewCommentBody('');
-      setCommentModalSection(null);
-      reload();
-    }
-  };
-
-  const handleReply = async (commentId) => {
-    if (!replyBody.trim()) return;
-    const ok = await run(
-      () => localData(`/client/projects/${project.id}/comments/${commentId}/reply`, {
-        method: 'POST',
-        body: { content: replyBody.trim() },
-      }),
-      'تم إرسال ردك بنجاح'
-    );
-    if (ok) {
-      setReplyBody('');
-      setReplyTargetId(null);
-      reload();
-    }
-  };
-
-  const openCommentCount = comments.filter((c) => c.status !== 'resolved').length;
-
-  return (
-    <Page
-      title={project.name}
-      sub="المعاينة المباشرة وإبداء الملاحظات على أقسام المشروع"
-      back={{ to: '/portal', label: 'العودة للرئيسية' }}
-      actions={
-        <div className="row gap-2">
-          <Chip tone={project.status === 'completed' ? 'green' : 'amber'}>
-            {project.status === 'completed' ? 'المشروع مكتمل' : 'قيد التطوير'}
-          </Chip>
-          {project.production_url && (
-            <a
-              href={project.production_url}
-              target="_blank"
-              rel="noreferrer"
-              className="btn btn-secondary size-small gap-1.5"
-            >
-              <Icon name="external" className="size-3.5" />
-              <span>زيارة الموقع الحي</span>
-            </a>
-          )}
-        </div>
-      }
-    >
-      {/* Overview Status Bar */}
-      <Card hl className="overview-hero">
-        <div className="overview-progress-heading">
-          <div className="overview-progress-value">
-            <h2>نسبة إنجاز المشروع</h2>
-            <strong className="stat">{project.progress}%</strong>
-          </div>
-          <div className="row gap-3">
-            <span className="text-xs font-semibold text-brand-700 bg-brand-50 px-3 py-1.5 rounded-full border border-brand-200">
-              {comments.length} إجمالي الملاحظات ({openCommentCount} بانتظار الإدارة)
-            </span>
-          </div>
-        </div>
-        <Bar value={project.progress} label={`إنجاز ${project.name}`} />
-        {(project.start_date || project.end_date) && (
-          <span className="muted text-xs">
-            <Range from={fmtDate(project.start_date)} to={fmtDate(project.end_date)} />
-          </span>
-        )}
-      </Card>
-
-      {/* Production Website Live Preview Section */}
-      {project.production_url && (
-        <div className="preview-container">
-          <div className="preview-toolbar">
-            <div className="row gap-2 items-center">
-              <span className="text-xs font-bold text-ink">معاينة الموقع الحي:</span>
-              <div className="viewport-switcher" role="radiogroup" aria-label="أبعاد العرض">
-                <button
-                  type="button"
-                  className={`viewport-btn ${viewport === 'desktop' ? 'active' : ''}`}
-                  onClick={() => setViewport('desktop')}
-                >
-                  <Icon name="monitor" className="size-3.5" />
-                  <span>سطح المكتب</span>
-                </button>
-                <button
-                  type="button"
-                  className={`viewport-btn ${viewport === 'tablet' ? 'active' : ''}`}
-                  onClick={() => setViewport('tablet')}
-                >
-                  <Icon name="tablet" className="size-3.5" />
-                  <span>لوحي</span>
-                </button>
-                <button
-                  type="button"
-                  className={`viewport-btn ${viewport === 'mobile' ? 'active' : ''}`}
-                  onClick={() => setViewport('mobile')}
-                >
-                  <Icon name="smartphone" className="size-3.5" />
-                  <span>هاتف</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="preview-actions">
-              <button
-                type="button"
-                className="btn btn-ghost size-small gap-1"
-                onClick={() => setFullscreen(!fullscreen)}
-                title={fullscreen ? 'تصغير الشاشة' : 'ملء الشاشة'}
-              >
-                <Icon name={fullscreen ? 'minimize' : 'maximize'} className="size-3.5" />
-                <span>{fullscreen ? 'إغلاق ملء الشاشة' : 'ملء الشاشة'}</span>
-              </button>
-              <a
-                href={project.production_url}
-                target="_blank"
-                rel="noreferrer"
-                className="btn btn-secondary size-small gap-1"
-              >
-                <Icon name="external" className="size-3.5" />
-                <span>فتح في نافذة جديدة</span>
-              </a>
-            </div>
-          </div>
-
-          <div className={`preview-stage ${fullscreen ? 'fullscreen' : ''}`}>
-            {fullscreen && (
-              <button
-                type="button"
-                className="absolute top-4 start-4 z-50 btn btn-primary size-small gap-1 shadow-lg"
-                onClick={() => setFullscreen(false)}
-              >
-                <Icon name="close" className="size-4" />
-                <span>إغلاق ملء الشاشة</span>
-              </button>
-            )}
-            <div className={`preview-iframe-wrapper ${viewport}`}>
-              <iframe
-                title="معاينة الموقع الحي"
-                src={project.production_url}
-                className="preview-iframe"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                loading="lazy"
-              />
-            </div>
-          </div>
-
-          <div className="preview-security-notice">
-            <div className="row gap-2 items-center text-xs text-ink-soft">
-              <Icon name="alert" className="size-4 text-warm-700 flex-none" />
-              <span>
-                تنويه: بعض المواقع تطبق سياسات أمان متقدمة تمنع العرض المباشر داخل الإطارات المضمنة (X-Frame-Options أو CSP). إذا ظهرت الصفحة بيضاء، يمكنك النقر على «فتح في نافذة جديدة» للمعاينة الفورية.
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Interactive Review Sections (Figma & Notion Hover Comments) */}
-      <div className="stack gap-4">
-        <div className="row between items-center">
-          <div>
-            <h2 className="text-xl font-bold text-ink">مراجعة أقسام ومواصفات المشروع</h2>
-            <p className="text-xs text-muted">
-              حرّك المؤشر فوق أي قسم أو انقر على زر القلم ✏️ لإضافة ملاحظة أو طلب استفسار لفريق العمل.
-            </p>
-          </div>
-          <span className="text-xs text-muted bg-surface-sunken px-3 py-1.5 rounded-xl border border-line">
-            وضع القراءة والتعليق فقط (حساب العميل)
-          </span>
-        </div>
-
-        <div className="review-sections-list">
-          {sections.map((section) => {
-            const sectionComments = comments.filter((c) => c.section_id === section.id);
-            return (
-              <div key={section.id} className="review-section-card group">
-                <div className="review-section-header">
-                  <div className="review-section-titles">
-                    <h3 className="review-section-title">{section.title}</h3>
-                    {section.subtitle && <span className="review-section-sub">{section.subtitle}</span>}
-                  </div>
-                  <button
-                    type="button"
-                    className="review-comment-trigger"
-                    onClick={() => {
-                      setCommentModalSection(section);
-                      setNewCommentBody('');
-                    }}
-                    title="إضافة ملاحظة على هذا القسم"
-                  >
-                    <Icon name="pencil" className="size-3.5" />
-                    <span>إضافة ملاحظة</span>
-                  </button>
-                </div>
-
-                {/* Section Content - Strict Read Only */}
-                <p className="review-section-body">{section.content}</p>
-
-                {/* Section Inline Comments Thread */}
-                {sectionComments.length > 0 && (
-                  <div className="section-comments-container">
-                    <span className="text-xs font-bold text-ink-soft flex items-center gap-1.5">
-                      <Icon name="comment-add" className="size-3 text-brand-700" />
-                      <span>الملاحظات والمناقشات على هذا القسم ({sectionComments.length}):</span>
-                    </span>
-
-                    {sectionComments.map((comment) => (
-                      <div key={comment.id} className="section-comment-card">
-                        <div className="section-comment-header">
-                          <div className="row gap-2 items-center">
-                            <strong>{comment.author_name || 'العميل'}</strong>
-                            <span className="muted small">{fmtTime(comment.created_at)}</span>
-                          </div>
-                          <span className={`comment-status-pill ${comment.status}`}>
-                            {comment.status === 'resolved' ? 'تم الحل والمطابقة ✓' : comment.status === 'in_progress' ? 'قيد المعالجة' : 'مفتوح بانتظار الرد'}
-                          </span>
-                        </div>
-
-                        <p className="text-xs text-ink leading-relaxed">{comment.content}</p>
-
-                        {/* Thread Replies */}
-                        {comment.replies && comment.replies.length > 0 && (
-                          <div className="stack gap-2 mt-1">
-                            {comment.replies.map((r) => (
-                              <div key={r.id} className="comment-reply-item">
-                                <div className="row between text-xs font-semibold">
-                                  <span className={r.author === 'admin' ? 'text-brand-800' : 'text-ink'}>
-                                    {r.author_name} {r.author === 'admin' && '(فريق الإدارة)'}
-                                  </span>
-                                  <span className="muted small font-normal">{fmtTime(r.created_at)}</span>
-                                </div>
-                                <p className="text-xs text-ink-soft mt-0.5">{r.content}</p>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Reply Form */}
-                        {replyTargetId === comment.id ? (
-                          <div className="stack gap-2 mt-2 pt-2 border-t border-line-soft">
-                            <textarea
-                              className="w-full text-xs p-2.5 rounded-lg border border-control-border bg-white"
-                              rows={2}
-                              placeholder="اكتب ردك على هذه الملاحظة..."
-                              value={replyBody}
-                              onChange={(e) => setReplyBody(e.target.value)}
-                            />
-                            <div className="row gap-2 justify-end">
-                              <Button
-                                size="small"
-                                variant="secondary"
-                                onClick={() => {
-                                  setReplyTargetId(null);
-                                  setReplyBody('');
-                                }}
-                              >
-                                إلغاء
-                              </Button>
-                              <Button
-                                size="small"
-                                loading={busy}
-                                onClick={() => handleReply(comment.id)}
-                              >
-                                إرسال الرد
-                              </Button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="row justify-end mt-1">
-                            <button
-                              type="button"
-                              className="text-xs text-brand-700 hover:text-brand-900 font-semibold cursor-pointer border-0 bg-transparent p-0"
-                              onClick={() => {
-                                setReplyTargetId(comment.id);
-                                setReplyBody('');
-                              }}
-                            >
-                              رد على هذه المحادثة
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* New Comment Modal / Popover */}
-      {commentModalSection && (
-        <div className="portal-modal-backdrop" onClick={() => setCommentModalSection(null)}>
-          <div className="portal-modal-panel" onClick={(e) => e.stopPropagation()}>
-            <div className="row between items-center mb-4 pb-3 border-b border-line-soft">
-              <div>
-                <h3 className="text-base font-bold text-ink">إضافة ملاحظة أو طلب استفسار</h3>
-                <span className="text-xs text-brand-700 font-semibold">
-                  قسم: {commentModalSection.title}
-                </span>
-              </div>
-              <button
-                type="button"
-                className="btn btn-ghost size-small"
-                onClick={() => setCommentModalSection(null)}
-              >
-                <Icon name="close" className="size-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateComment} className="stack gap-4">
-              <Field label="نص الملاحظة أو التعديل المطلوب" error={err}>
-                <textarea
-                  rows={4}
-                  required
-                  autoFocus
-                  className="w-full p-3 text-sm rounded-xl border border-control-border bg-surface-sunken"
-                  placeholder="مثال: نود التحقق من توافق حجم الشعار أو إضافة خيار تغليف الهدايا..."
-                  value={newCommentBody}
-                  onChange={(e) => setNewCommentBody(e.target.value)}
-                />
-              </Field>
-
-              <div className="row justify-end gap-2 pt-2 border-t border-line-soft">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setCommentModalSection(null)}
-                >
-                  إلغاء
-                </Button>
-                <Button type="submit" loading={busy}>
-                  إرسال الملاحظة
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </Page>
-  );
-}
+// تفاصيل المشروع منقولة إلى ProjectDetail.jsx
+export { ProjectDetail } from './ProjectDetail.jsx';

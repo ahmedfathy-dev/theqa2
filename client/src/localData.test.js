@@ -36,10 +36,12 @@ test('email login and password recovery work for client and admin demo accounts'
     (error) => error.status === 400,
   );
   await assert.rejects(
-    post('/client/login', { email: adminEmail, password: adminPassword }),
+    post('/client/login', { email: 'new-client@example.com', password: 'any-password' }),
     (error) => error.status === 401,
   );
-  await post('/client/login', { email: 'new-client@example.com', password: 'any-password' });
+  assert.equal((await post('/client/login', { email: adminEmail, password: adminPassword })).role, 'admin');
+  assert.equal((await post('/admin/login', { email: clientEmail, password: clientPassword })).role, 'client');
+  assert.equal((await post('/client/login', { email: clientEmail, password: clientPassword })).role, 'client');
   const demoOverview = await localData('/client/overview');
   assert.equal(demoOverview.client.id, 'demo-client');
   assert.equal(demoOverview.client.brand_name, 'دار شذرة');
@@ -76,18 +78,7 @@ test('email login and password recovery work for client and admin demo accounts'
     post('/client/login', { email: 'new-client@example.com', password: 'wrong-password' }),
     (error) => error.status === 401,
   );
-  await post('/client/login', { email: 'new-client@example.com', password: 'any-password' });
-  await post('/client/logout', {});
-
-  const arbitraryEmailReset = await post('/client/password-reset', { email: 'new-client@example.com' });
-  assert.match(arbitraryEmailReset.resetCode, /^\d{6}$/);
-  await post('/client/password-reset/confirm', {
-    email: 'new-client@example.com',
-    code: arbitraryEmailReset.resetCode,
-    password: 'updated-pass123',
-  });
-  await post('/client/login', { email: 'new-client@example.com', password: 'updated-pass123' });
-  await post('/client/logout', {});
+  assert.deepEqual(await post('/client/password-reset', { email: 'new-client@example.com' }), { ok: true, resetCode: null });
 
   await post('/client/login', { email: ` ${clientEmail.toUpperCase()} `, password: clientPassword });
   assert.equal((await localData('/client/overview')).client.email, clientEmail);
