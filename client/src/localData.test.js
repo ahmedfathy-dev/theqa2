@@ -44,8 +44,8 @@ test('email login and password recovery work for client and admin demo accounts'
   assert.equal((await post('/client/login', { email: clientEmail, password: clientPassword })).role, 'client');
   const demoOverview = await localData('/client/overview');
   assert.equal(demoOverview.client.id, 'demo-client');
-  assert.equal(demoOverview.client.brand_name, 'دار شذرة');
-  assert.equal(demoOverview.client.project_name, 'هوية ومتجر دار شذرة');
+  assert.equal(demoOverview.client.brand_name, 'ثقة');
+  assert.equal(demoOverview.client.project_name, 'هوية ومتجر ثقة');
   assert.equal(demoOverview.client.progress, 42);
   assert.ok(demoOverview.phases.some((phase) => phase.status === 'current'));
   assert.equal(demoOverview.updates.length, 3);
@@ -179,8 +179,8 @@ test('email login and password recovery work for client and admin demo accounts'
   await post('/client/login', { email: clientEmail, password: clientPassword });
   const migratedOverview = await localData('/client/overview');
   assert.equal(migratedOverview.client.email, clientEmail);
-  assert.equal(migratedOverview.client.brand_name, 'دار شذرة');
-  assert.equal(migratedOverview.client.project_name, 'هوية ومتجر دار شذرة');
+  assert.equal(migratedOverview.client.brand_name, 'ثقة');
+  assert.equal(migratedOverview.client.project_name, 'هوية ومتجر ثقة');
   assert.equal(migratedOverview.files.length, 2);
 });
 
@@ -205,32 +205,32 @@ test('Interactive Project Management, Client Isolation & Inline Comments System'
 
   // 3. Admin creates a new project assigned specifically to demo client
   await assert.rejects(
-    post('/admin/projects', { name: '', production_url: 'https://demo.shathrah.test', client_id: 'demo-client' }),
+    post('/admin/projects', { name: '', production_url: 'https://demo.thiqa.test', client_id: 'demo-client' }),
     /اسم المشروع مطلوب/,
   );
   await assert.rejects(
-    post('/admin/projects', { name: 'متجر دار شذرة الجديد', production_url: 'invalid-url', client_id: 'demo-client' }),
+    post('/admin/projects', { name: 'متجر ثقة الجديد', production_url: 'invalid-url', client_id: 'demo-client' }),
     /رابط موقع حي صحيح/,
   );
   await assert.rejects(
-    post('/admin/projects', { name: 'متجر دار شذرة الجديد', production_url: 'https://demo.test', client_id: 'non-existent-client' }),
+    post('/admin/projects', { name: 'متجر ثقة الجديد', production_url: 'https://demo.test', client_id: 'non-existent-client' }),
     /العميل المحدد غير موجود/,
   );
 
   const createdProjectRes = await post('/admin/projects', {
-    name: 'متجر دار شذرة الحي الفاخر',
-    production_url: 'https://store.shathrah.test',
+    name: 'متجر ثقة الحي الفاخر',
+    production_url: 'https://store.thiqa.test',
     client_id: 'demo-client',
     status: 'in_progress',
     progress: 55,
-    description: 'المتجر الإلكتروني الرئيسي لدار شذرة',
+    description: 'المتجر الإلكتروني الرئيسي لثقة',
   });
   assert.ok(createdProjectRes.id);
   const projectId = createdProjectRes.id;
 
   // Verify project sections are automatically seeded with 8 standard sections
   const adminProjectView = await localData(`/admin/projects/${projectId}`);
-  assert.equal(adminProjectView.project.name, 'متجر دار شذرة الحي الفاخر');
+  assert.equal(adminProjectView.project.name, 'متجر ثقة الحي الفاخر');
   assert.equal(adminProjectView.project.sections.length, 8);
   assert.ok(adminProjectView.project.sections.some((s) => s.id === 'design_ui'));
 
@@ -244,7 +244,7 @@ test('Interactive Project Management, Client Isolation & Inline Comments System'
   // Client A views project details
   const clientAProjectDetail = await localData(`/client/projects/${projectId}`);
   assert.equal(clientAProjectDetail.project.id, projectId);
-  assert.equal(clientAProjectDetail.project.production_url, 'https://store.shathrah.test');
+  assert.equal(clientAProjectDetail.project.production_url, 'https://store.thiqa.test');
 
   // Client A submits an inline comment on a section (e.g. design_ui)
   await assert.rejects(
@@ -306,11 +306,11 @@ test('Interactive Project Management, Client Isolation & Inline Comments System'
   // 7. Admin updates project information (progress, name)
   await localData(`/admin/projects/${projectId}`, {
     method: 'PATCH',
-    body: { progress: 85, name: 'متجر دار شذرة الرسمي' },
+    body: { progress: 85, name: 'متجر ثقة الرسمي' },
   });
   const patchedView = await localData(`/admin/projects/${projectId}`);
   assert.equal(patchedView.project.progress, 85);
-  assert.equal(patchedView.project.name, 'متجر دار شذرة الرسمي');
+  assert.equal(patchedView.project.name, 'متجر ثقة الرسمي');
 
   // 8. Admin deletes project and verifies cascade deletion
   await localData(`/admin/projects/${projectId}`, { method: 'DELETE' });

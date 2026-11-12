@@ -17,7 +17,7 @@ export function AdminLogin() {
       submitLabel="تسجيل دخول الإدارة"
       forgotTo="/admin/forgot-password"
       layout={{
-        brand: 'دار شذرة',
+        brand: 'ثقة',
         heading: 'لوحة تحكم الإدارة',
         description: 'تسجيل الدخول لفريق العمل وإدارة مشاريع العملاء.',
         points: ['إدارة العملاء والمشاريع', 'الجدولة والمراحل والطلبات', 'التواصل والتحديثات المباشرة'],
@@ -91,7 +91,7 @@ export function Clients() {
             <span>لوحة المتابعة الشاملة</span>
           </span>
           <h2>مساحة إدارة المشاريع</h2>
-          <p>تابع تقدم مشاريع العملاء والطلبات المفتوحة والتعليقات المباشرة أولاً بأول في دار شذرة.</p>
+          <p>تابع تقدم مشاريع العملاء والطلبات المفتوحة والتعليقات المباشرة أولاً بأول في ثقة.</p>
         </div>
         <div className="tool-overview-stats" aria-label="ملخص العمل">
           <div className="tool-stat-card">

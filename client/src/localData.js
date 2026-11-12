@@ -82,7 +82,7 @@ export function defaultProjectSections(projectName = 'المشروع') {
       id: 'design_ui',
       title: 'الهوية البصرية وتصميم الواجهة (UI/UX)',
       subtitle: 'التوجه الفني وتجربة الاستخدام',
-      content: 'تصميم مخصص يعتمد على هوية دار شذرة (الأخضر النباتي العميق #2C6852، الذهب الدافئ #DAB272، والبيج الرملي)، مع خط الإسكندرية العربي المتناسق وأيقونات انسيابية راقية.',
+      content: 'تصميم مخصص يعتمد على هوية ثقة (الأخضر النباتي العميق #2C6852، الذهب الدافئ #DAB272، والبيج الرملي)، مع خط الإسكندرية العربي المتناسق وأيقونات انسيابية راقية.',
     },
     {
       id: 'deliverables',
@@ -180,18 +180,18 @@ function seedDemoProject(state) {
   if (state.demoContentVersion >= 4 || !state.clients?.some((client) => client.id === 'demo-client')) return false;
 
   const client = state.clients.find((row) => row.id === 'demo-client');
-  if (client.name === 'عميل تجريبي' || client.name === 'دار سُدرة') client.name = 'دار شذرة';
-  if (client.project_name === 'الموقع الإلكتروني' || client.project_name === 'هوية ومتجر دار سُدرة') client.project_name = 'هوية ومتجر دار شذرة';
+  if (client.name === 'عميل تجريبي' || client.name === 'دار سُدرة') client.name = 'ثقة';
+  if (client.project_name === 'الموقع الإلكتروني' || client.project_name === 'هوية ومتجر دار سُدرة') client.project_name = 'هوية ومتجر ثقة';
   if (!client.contact_name || client.contact_name === 'محمد') client.contact_name = 'سارة العبدالله';
   if (client.progress === 25) client.progress = 42;
   client.start_date ||= relativeDate(-14);
   client.end_date ||= relativeDate(30);
-  client.brand_name = 'دار شذرة';
+  client.brand_name = 'ثقة';
   client.brand_tagline = 'عطور ومنتجات منزلية راقية بروح الطبيعة ولمسات الذهب';
   client.brand_description = 'منصة فاخرة للمنتجات المنزلية الطبيعية والعطور الحرفية، تجمع بين نقاء المواد وأصالة الحرف وهدوء التصميم الموشى بالذهب الدافئ.';
   client.brand_palette = [
-    { name: 'أخضر شذرة النباتي', value: '#2C6852' },
-    { name: 'ذهب شذرة الدافئ', value: '#DAB272' },
+    { name: 'أخضر ثقة النباتي', value: '#2C6852' },
+    { name: 'ذهب ثقة الدافئ', value: '#DAB272' },
     { name: 'بيج رملي ناعم', value: '#E8DAC2' },
     { name: 'عاجي ناصع', value: '#FAF6F0' },
   ];
@@ -226,15 +226,15 @@ function seedDemoProject(state) {
 
   const welcomeUpdate = state.updates.find((update) => update.id === 'update-1');
   if (welcomeUpdate?.title === 'أهلا بك في بوابة المشروع' || welcomeUpdate?.title === 'انطلاق مشروع هوية دار سُدرة') {
-    welcomeUpdate.title = 'انطلاق مشروع هوية دار شذرة';
-    welcomeUpdate.body = 'بدأنا بتحديد شخصية العلامة ونبرة دار شذرة الفاخرة والجمهور المستهدف للمنتجات المنزلية الطبيعية.';
+    welcomeUpdate.title = 'انطلاق مشروع هوية ثقة';
+    welcomeUpdate.body = 'بدأنا بتحديد شخصية العلامة ونبرة ثقة الفاخرة والجمهور المستهدف للمنتجات المنزلية الطبيعية.';
     welcomeUpdate.phase_name = phases[0]?.name || DEFAULT_PHASES[0];
     welcomeUpdate.created_at = relativeTimestamp(-8, 11);
   }
   const updates = [
     {
-      id: 'update-2', title: 'المسار البصري المعتمد: أخضر شذرة النباتي والذهب الدافئ',
-      body: 'جهزنا مسارات بصرية تمزج أخضر شذرة النباتي بدرجات الذهب الدافئ الفاخر (#DAB272) والبيج الرملي والعاجي، مع خطوط عربية متناسقة ونماذج تغليف تعكس نقاء الطبيعة وفخامة الحرف اليدوية.',
+      id: 'update-2', title: 'المسار البصري المعتمد: أخضر ثقة النباتي والذهب الدافئ',
+      body: 'جهزنا مسارات بصرية تمزج أخضر ثقة النباتي بدرجات الذهب الدافئ الفاخر (#DAB272) والبيج الرملي والعاجي، مع خطوط عربية متناسقة ونماذج تغليف تعكس نقاء الطبيعة وفخامة الحرف اليدوية.',
       phase_name: 'التصميم', created_at: relativeTimestamp(-3, 14),
     },
     {
@@ -252,12 +252,12 @@ function seedDemoProject(state) {
 
   const firstRequest = state.requests.find((request) => request.id === 'request-1');
   if (firstRequest?.title === 'اختر اللون الرئيسي' || firstRequest?.title === 'اعتماد لوحة الألوان') {
-    firstRequest.title = 'اعتماد لوحة الألوان لمجموعات دار شذرة';
-    firstRequest.description = 'أي لوحة أقرب لهوية دار شذرة؟ اختيارك يحدد اتجاه تغليف المنتجات وتصميم واجهة المتجر ولمسات الذهب الملكي.';
+    firstRequest.title = 'اعتماد لوحة الألوان لمجموعات ثقة';
+    firstRequest.description = 'أي لوحة أقرب لهوية ثقة؟ اختيارك يحدد اتجاه تغليف المنتجات وتصميم واجهة المتجر ولمسات الذهب الملكي.';
     firstRequest.options = [
-      { label: 'أخضر شذرة النباتي (#2C6852) مع ذهب دافئ (#DAB272) وعاجي (الموصى به)' },
+      { label: 'أخضر ثقة النباتي (#2C6852) مع ذهب دافئ (#DAB272) وعاجي (الموصى به)' },
       { label: 'أخضر زيتوني ملكي مع ذهب عتيق وبيج رملي' },
-      { label: 'درجات خشب الصندل الدافئ مع أخضر الغابة العميق وذهب شذرة' },
+      { label: 'درجات خشب الصندل الدافئ مع أخضر الغابة العميق وذهب ثقة' },
     ];
   }
   state.requests ||= [];
@@ -272,8 +272,8 @@ function seedDemoProject(state) {
 
   state.files ||= [];
   [
-    { id: 'file-brand-board', name: 'لوحة الهوية البصرية - دار شذرة.svg', url: '/demo/sidra-brand-board.svg', created_at: relativeTimestamp(-1, 9) },
-    { id: 'file-brand-mark', name: 'الشعار الأولي - دار شذرة.svg', url: '/demo/sidra-mark.svg', created_at: relativeTimestamp(-3, 13) },
+    { id: 'file-brand-board', name: 'لوحة الهوية البصرية - ثقة.svg', url: '/demo/sidra-brand-board.svg', created_at: relativeTimestamp(-1, 9) },
+    { id: 'file-brand-mark', name: 'الشعار الأولي - ثقة.svg', url: '/demo/sidra-mark.svg', created_at: relativeTimestamp(-3, 13) },
   ].forEach((file) => {
     if (!state.files.some((existing) => existing.id === file.id)) {
       state.files.push({ ...file, client_id: client.id });
@@ -282,12 +282,12 @@ function seedDemoProject(state) {
 
   const welcomeMessage = state.messages.find((message) => message.id === 'message-1');
   if (welcomeMessage?.body === 'أهلا بك! يمكنك إرسال أي استفسار من هذه الصفحة.') {
-    welcomeMessage.body = 'أهلًا سارة! شاركنا معك تصور هوية دار شذرة الأولي ونماذج المنتجات. يمكنك مراجعتها واعتماد لوحة الألوان من قسم «المطلوب منك».';
+    welcomeMessage.body = 'أهلًا سارة! شاركنا معك تصور هوية ثقة الأولي ونماذج المنتجات. يمكنك مراجعتها واعتماد لوحة الألوان من قسم «المطلوب منك».';
     welcomeMessage.created_at = relativeTimestamp(-3, 13);
   }
   state.messages ||= [];
   [
-    { id: 'message-2', from_client: true, body: 'الأخضر النباتي مع لمسات الذهب الدافئ مناسب جداً وفخم، ويعكس تماماً طابع منتجات دار شذرة الراقية.', created_at: relativeTimestamp(-2, 10) },
+    { id: 'message-2', from_client: true, body: 'الأخضر النباتي مع لمسات الذهب الدافئ مناسب جداً وفخم، ويعكس تماماً طابع منتجات ثقة الراقية.', created_at: relativeTimestamp(-2, 10) },
     { id: 'message-3', from_client: false, body: 'سعداء جداً بإعجابك سارة! اعتمدنا لمسات الذهب الدافئ على حواف العبوات والشعار، وخيارات لوحة الألوان جاهزة لاعتمادك النهائي.', created_at: relativeTimestamp(-1, 11) },
   ].forEach((message) => {
     if (!state.messages.some((existing) => existing.id === message.id)) {
@@ -298,12 +298,12 @@ function seedDemoProject(state) {
   state.notifications ||= [];
   const welcomeNotification = state.notifications.find((notification) => notification.id === 'notification-1');
   if (welcomeNotification) {
-    welcomeNotification.text = 'تحديث جديد: انطلاق مشروع هوية دار شذرة';
+    welcomeNotification.text = 'تحديث جديد: انطلاق مشروع هوية ثقة';
   }
   [
     { id: 'notification-update-3', type: 'update', text: 'تحديث جديد: الشعار الأولي وعبوات المنتجات جاهزة للمراجعة', href: '/portal/updates/update-3', ref_id: 'update-3', read: false, created_at: relativeTimestamp(-1, 10) },
     { id: 'notification-request-2', type: 'request', text: 'مطلوب منك: مراجعة واعتماد الشعار الأولي', href: '/portal/requests', ref_id: 'request-2', read: false, created_at: relativeTimestamp(-1, 10) },
-    { id: 'notification-file-board', type: 'file', text: 'أضفنا ملف «لوحة الهوية البصرية - دار شذرة.svg»', href: '/portal/files', ref_id: 'file-brand-board', read: false, created_at: relativeTimestamp(-1, 9) },
+    { id: 'notification-file-board', type: 'file', text: 'أضفنا ملف «لوحة الهوية البصرية - ثقة.svg»', href: '/portal/files', ref_id: 'file-brand-board', read: false, created_at: relativeTimestamp(-1, 9) },
   ].forEach((notification) => {
     if (!state.notifications.some((existing) => existing.id === notification.id)) {
       state.notifications.push({ ...notification, client_id: client.id });
@@ -316,18 +316,18 @@ function seedDemoProject(state) {
 
   if (!state.projects.some((p) => p.client_id === client.id)) {
     const demoProject = {
-      id: 'project-demo-shathrah',
+      id: 'project-demo-thiqa',
       client_id: client.id,
-      name: 'هوية ومتجر دار شذرة',
-      description: 'منصة تسوق رقمية راقية ومتجر إلكتروني فاخر لمنتجات دار شذرة الطبيعية والعطور الحرفية مع بوابات دفع آمنة وتجربة تصفح موشاة بالذهب الدافئ.',
-      production_url: 'https://shathrah.test',
+      name: 'هوية ومتجر ثقة',
+      description: 'منصة تسوق رقمية راقية ومتجر إلكتروني فاخر لمنتجات ثقة الطبيعية والعطور الحرفية مع بوابات دفع آمنة وتجربة تصفح موشاة بالذهب الدافئ.',
+      production_url: 'https://thiqa.test',
       status: 'in_progress',
       progress: 42,
       start_date: relativeDate(-14),
       end_date: relativeDate(30),
       created_at: relativeTimestamp(-14),
       updated_at: relativeTimestamp(-1),
-      sections: defaultProjectSections('هوية ومتجر دار شذرة'),
+      sections: defaultProjectSections('هوية ومتجر ثقة'),
     };
     state.projects.push(demoProject);
 
@@ -340,14 +340,14 @@ function seedDemoProject(state) {
         author: 'client',
         author_name: client.contact_name || 'سارة العبدالله',
         author_role: 'client',
-        content: 'نود التأكد من ظهور شعار دار شذرة الذهبي بحجم واضح ومتناسق في الشريط العلوي للمتجر على شاشات الجوال.',
+        content: 'نود التأكد من ظهور شعار ثقة الذهبي بحجم واضح ومتناسق في الشريط العلوي للمتجر على شاشات الجوال.',
         status: 'resolved',
         created_at: relativeTimestamp(-2, 14),
         replies: [
           {
             id: 'reply-demo-1',
             author: 'admin',
-            author_name: 'فريق دار شذرة',
+            author_name: 'فريق ثقة',
             author_role: 'admin',
             content: 'تم اعتماد الملاحظة وتحديث قياس الشعار ليكون بارزاً وأنيقاً في نسخة الهاتف.',
             created_at: relativeTimestamp(-1, 16),
@@ -369,9 +369,9 @@ function seedDemoProject(state) {
           {
             id: 'reply-demo-2',
             author: 'admin',
-            author_name: 'فريق دار شذرة',
+            author_name: 'فريق ثقة',
             author_role: 'admin',
-            content: 'فكرة ممتازة جداً وتتناسب مع هوية دار شذرة. جاري إضافة ميزة كرت الإهداء وصناديق التغليف المخملية ضمن خيارات الدفع.',
+            content: 'فكرة ممتازة جداً وتتناسب مع هوية ثقة. جاري إضافة ميزة كرت الإهداء وصناديق التغليف المخملية ضمن خيارات الدفع.',
             created_at: relativeTimestamp(-1, 13),
           },
         ],
@@ -397,7 +397,7 @@ function seedDemoProject(state) {
       target_id: 'update-3',
       client_id: client.id,
       author_role: 'admin',
-      author_name: 'فريق دار شذرة',
+      author_name: 'فريق ثقة',
       body: 'سعداء بإعجابك سارة! سنجهز نماذج الطباعة على الورق القطني خلال يومين.',
       created_at: relativeTimestamp(-1, 12),
     },
@@ -501,8 +501,15 @@ function createInitialState() {
   return state;
 }
 
+// تغيير اسم العلامة المحفوظ في بيانات المتصفح الحالية إلى «ثقة».
+const LEGACY_BRAND = [[/دار شذرة/g, 'ثقة'], [/شذرة/g, 'ثقة'], [/shathrah\.test/g, 'thiqa.test'], [/project-demo-shathrah/g, 'project-demo-thiqa']];
+
 export function readState() {
-  const saved = localStorage.getItem(STORAGE_KEY);
+  let saved = localStorage.getItem(STORAGE_KEY);
+  if (saved && LEGACY_BRAND.some(([re]) => re.test(saved))) {
+    LEGACY_BRAND.forEach(([re, to]) => { saved = saved.replace(re, to); });
+    try { localStorage.setItem(STORAGE_KEY, saved); } catch {}
+  }
   if (!saved) {
     const initial = createInitialState();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));

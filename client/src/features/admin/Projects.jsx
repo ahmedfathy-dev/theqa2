@@ -266,7 +266,7 @@ export function AdminProjects() {
                   type="text"
                   required
                   autoFocus
-                  placeholder="مثال: متجر دار شذرة للعطور الفاخرة"
+                  placeholder="مثال: متجر إلكتروني للعطور الفاخرة"
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
                 />

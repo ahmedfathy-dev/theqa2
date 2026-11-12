@@ -27,9 +27,13 @@
     --warm-700: 7 98 130;
 
     /* Violet: used only for soft shadows and glows to add depth (never for text or fills). */
+    --violet-50: 246 243 255;
+    --violet-100: 233 226 254;
+    --violet-200: 211 199 252;
     --violet-300: 167 139 250;
     --violet-500: 124 92 230;
     --violet-600: 99 66 200;
+    --violet-700: 79 52 168;
 
     --ink: 17 40 64;
     --ink-soft: 45 66 92;
@@ -42,7 +46,7 @@
 
     /* semantic tones */
     --ok-50: 236 249 246;   --ok-100: 204 238 231;   --ok-700: 15 118 110;
-    --info-50: 238 244 255; --info-100: 214 228 253; --info-700: 37 99 190;
+    --info-50: 246 243 255; --info-100: 229 222 253; --info-700: 91 59 190;
     --warn-50: 236 251 255; --warn-100: 207 244 252; --warn-700: 7 98 130;
     --bad-50: 252 241 238;  --bad-100: 241 213 207;  --bad-600: 174 72 55; --bad-700: 139 54 41;
 
@@ -65,7 +69,7 @@
     --origin-end: right;
 
     color-scheme: light;
-    accent-color: rgb(var(--brand-600));
+    accent-color: rgb(var(--violet-500));
   }
   :root[dir='rtl'] { --origin-start: right; --origin-end: left; }
 
@@ -80,7 +84,7 @@
     text-rendering: optimizeLegibility;
     overflow-wrap: break-word;
     background-color: rgb(var(--surface-sunken));
-    background-image: radial-gradient(ellipse 60% 40% at 0% 0%, rgb(var(--violet-300) / 0.10) 0%, transparent 70%), radial-gradient(ellipse 50% 40% at 100% 100%, rgb(var(--brand-200) / 0.35) 0%, transparent 70%);
+    background-image: radial-gradient(ellipse 60% 40% at 0% 0%, rgb(var(--violet-300) / 0.20) 0%, transparent 70%), radial-gradient(ellipse 55% 45% at 100% 100%, rgb(var(--violet-200) / 0.32) 0%, transparent 70%);
     background-attachment: fixed;
     scrollbar-color: rgb(var(--control-border) / 0.45) transparent;
     scrollbar-width: thin;
@@ -89,14 +93,14 @@
   *, ::before, ::after { @apply box-border; }
   button, input, select, textarea { font: inherit; -webkit-tap-highlight-color: transparent; }
   a { @apply text-brand-700; -webkit-tap-highlight-color: transparent; text-underline-offset: 0.25em; }
-  a:hover { @apply text-brand-800; }
+  a:hover { @apply text-violet-700; }
   h1, h2, h3, p { @apply m-0; }
   h1 { @apply text-xl font-bold sm:text-2xl; text-wrap: balance; }
   h2 { @apply text-lg font-semibold; text-wrap: balance; }
   h3 { @apply text-base font-semibold; }
   p { text-wrap: pretty; }
-  ::selection { @apply bg-brand-200/70 text-brand-800; }
-  :focus-visible { @apply outline outline-2 outline-offset-2 outline-brand-600; }
+  ::selection { @apply bg-violet-200/70 text-brand-800; }
+  :focus-visible { @apply outline outline-2 outline-offset-2 outline-violet-500; }
 
   /* Custom scrollbar for webkit */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -134,14 +138,14 @@
   .app-shell:has(.app-sidebar.is-collapsed) { grid-template-columns: 5rem minmax(0, 1fr); }
   .app-sidebar {
     @apply sticky top-0 z-20 h-screen;
-    background: linear-gradient(180deg, rgb(38 106 178) 0%, rgb(32 88 160) 55%, rgb(40 72 150) 100%);
+    background: linear-gradient(180deg, rgb(40 104 180) 0%, rgb(54 86 172) 50%, rgb(82 68 170) 100%);
     box-shadow: inset -1px 0 0 rgb(255 255 255 / 0.08), 0 0 40px -10px rgb(var(--violet-500) / 0.5);
   }
   .sidebar-inner {
     @apply flex h-full flex-col gap-6 overflow-y-auto overflow-x-hidden px-3.5 py-6;
     background-image:
       radial-gradient(ellipse at 20% 0%, rgb(255 255 255 / 0.10) 0%, transparent 60%),
-      radial-gradient(ellipse at 80% 100%, rgb(var(--violet-300) / 0.28) 0%, transparent 55%);
+      radial-gradient(ellipse at 80% 100%, rgb(var(--violet-300) / 0.38) 0%, transparent 60%);
     scrollbar-width: none;
   }
   .sidebar-inner::-webkit-scrollbar { display: none; }
@@ -234,7 +238,7 @@
   .sidebar-notification-dot {
     @apply absolute -top-0.5 -right-0.5 size-2 rounded-full;
     background-color: rgb(var(--warm-300));
-    box-shadow: 0 0 0 2px rgb(32 88 160);
+    box-shadow: 0 0 0 2px rgb(54 86 172);
   }
   .sidebar-notification-label {
     @apply truncate;
@@ -439,7 +443,7 @@
   a.card { @apply text-inherit no-underline; }
   a.card:active { transform: none; }
   @media (hover: hover) {
-    a.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lift); border-color: rgb(var(--brand-200) / 0.7); }
+    a.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lift); border-color: rgb(var(--violet-200) / 0.9); }
   }
 
   .item {
@@ -483,7 +487,7 @@
   }
   input::placeholder, textarea::placeholder { @apply text-muted/70; }
   input:hover, textarea:hover { border-color: rgb(var(--muted)); }
-  input:focus, textarea:focus { @apply border-brand-600; box-shadow: 0 0 0 4px rgb(var(--brand-500) / 0.12); }
+  input:focus, textarea:focus { @apply border-violet-500; box-shadow: 0 0 0 4px rgb(var(--violet-500) / 0.16); }
   input:disabled, textarea:disabled { @apply cursor-not-allowed bg-surface-sunken opacity-70; }
   textarea { @apply min-h-28 resize-y leading-relaxed; }
   .select-control { @apply relative w-full; }
@@ -538,13 +542,13 @@
 
   .btn-primary {
     @apply text-white;
-    background: linear-gradient(135deg, rgb(var(--brand-600)) 0%, rgb(var(--brand-700)) 100%);
+    background: linear-gradient(135deg, rgb(var(--brand-600)) 0%, rgb(var(--violet-600)) 100%);
     box-shadow: 0 1px 2px rgb(var(--brand-800) / 0.2), 0 8px 18px -6px rgb(var(--violet-500) / 0.45);
   }
-  .btn-primary:hover:not(:disabled) { background: linear-gradient(135deg, rgb(var(--brand-700)) 0%, rgb(var(--brand-800)) 100%); @apply text-white; }
+  .btn-primary:hover:not(:disabled) { background: linear-gradient(135deg, rgb(var(--brand-700)) 0%, rgb(var(--violet-700)) 100%); @apply text-white; }
   .btn-primary:disabled { box-shadow: none; }
   .btn-secondary { @apply bg-surface text-ink-soft shadow-xs; border-color: rgb(var(--control-border) / 0.55); }
-  .btn-secondary:hover:not(:disabled) { @apply border-brand-200 bg-brand-50 text-brand-800; }
+  .btn-secondary:hover:not(:disabled) { @apply border-violet-200 bg-violet-50 text-violet-700; }
   .btn-outline { @apply border-brand-600 bg-transparent text-brand-700; }
   .btn-outline:hover:not(:disabled) { @apply bg-brand-50 text-brand-800; }
   .btn-ghost { @apply bg-transparent text-ink-soft; }
@@ -596,7 +600,7 @@
   }
   .auth-aside {
     @apply relative hidden flex-col justify-between gap-12 overflow-hidden p-14 text-white lg:flex;
-    background: linear-gradient(135deg, rgb(var(--brand-800)) 0%, rgb(var(--brand-700)) 40%, rgb(var(--brand-600)) 100%);
+    background: linear-gradient(135deg, rgb(var(--brand-800)) 0%, rgb(var(--brand-700)) 40%, rgb(var(--violet-600)) 100%);
   }
   .auth-aside::before {
     content: '';
@@ -746,7 +750,7 @@
     bottom: 0 !important;
     height: 100% !important;
     border-radius: 9999px;
-    background: linear-gradient(270deg, #1864a8 0%, #3b96e0 50%, #67d4f0 82%, #22bee8 100%);
+    background: linear-gradient(270deg, #1864a8 0%, #5a5fd6 55%, #8b6cf0 80%, #22bee8 100%);
     box-shadow: 0 1px 6px rgb(var(--warm-300) / 0.5);
     transform-origin: right center !important;
     will-change: width;
@@ -948,7 +952,7 @@
     @apply relative grid min-w-0 gap-6 overflow-hidden text-white;
     padding: 1.75rem 2rem;
     border-radius: 1.375rem;
-    background: linear-gradient(135deg, #2a7fcb 0%, #2368b8 55%, #4a4fb6 100%);
+    background: linear-gradient(135deg, #2a7fcb 0%, #3b5fc4 50%, #6a48d0 100%);
     border: 1px solid rgb(var(--warm-300) / 0.22);
     box-shadow: 0 16px 36px -10px rgb(var(--violet-500) / 0.5), 0 1px 3px rgb(0 0 0 / 0.1);
   }
@@ -1243,8 +1247,8 @@
 }
 .project-card:hover {
   transform: translateY(-3px);
-  border-color: rgb(var(--warm-300) / 0.8);
-  box-shadow: 0 10px 28px -6px rgb(var(--brand-800) / 0.12);
+  border-color: rgb(var(--violet-300) / 0.7);
+  box-shadow: 0 12px 30px -8px rgb(var(--violet-500) / 0.28);
 }
 .project-card-header {
   @apply flex items-start justify-between gap-3 mb-3;
@@ -1488,3 +1492,6 @@
 .preview-panel-badge { display: inline-grid; min-width: 1.25rem; height: 1.25rem; place-items: center; padding-inline: 0.3rem; border-radius: 999px; background: rgb(255 255 255 / 0.25); font-size: 0.7rem; font-weight: 700; }
 .btn-secondary .preview-panel-badge { background: rgb(var(--brand-100)); color: rgb(var(--brand-800)); }
 @media (max-width: 520px) { .preview-panel-toggle-label { display: none; } }
+
+.chip.blue { border-color: rgb(var(--violet-200)); background: rgb(var(--violet-50)); color: rgb(var(--violet-700)); }
+.segmented-item.active { color: rgb(var(--violet-700)); }

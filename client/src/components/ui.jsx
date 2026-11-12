@@ -540,7 +540,7 @@ export function AppSidebar({
           <Logo variant="white" className="sidebar-logo" />
           <span className="sidebar-brand-copy">
             <strong>{workspace}</strong>
-            <small>دار شذرة</small>
+            <small>ثقة</small>
           </span>
         </Link>
         {notificationTo && (
@@ -620,7 +620,7 @@ export function WorkspaceHeader({ items, workspace, homeTo, trailing }) {
 
 // Logo that links home, for the start of the nav bar.
 export const NavLogo = ({ to }) => (
-  <Link to={to} className="nav-logo" aria-label="دار شذرة، الصفحة الرئيسية"><Logo className="h-9" /></Link>
+  <Link to={to} className="nav-logo" aria-label="ثقة، الصفحة الرئيسية"><Logo className="h-9" /></Link>
 );
 
 // Modal on the native <dialog>: focus trap, Esc and inert background come from the platform;
@@ -944,7 +944,7 @@ export function AuthLayout({ brand, heading, description, points, preview, mobil
           </div>
         </aside>
         <form className="auth-form" onSubmit={onSubmit} noValidate>
-          <Logo className="h-16 self-start lg:hidden" alt="دار شذرة" />
+          <Logo className="h-16 self-start lg:hidden" alt="ثقة" />
           <div className="flex flex-col gap-3">
             <h1>{heading}</h1>
             {description && <p className="muted">{description}</p>}

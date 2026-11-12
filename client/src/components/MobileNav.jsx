@@ -47,7 +47,7 @@ export default function MobileNav({ items, label, title, logoTo, onLogout, trail
       <CardNav
         className="min-w-0 flex-1"
         logo={logoUrl}
-        logoAlt="دار شذرة، الصفحة الرئيسية"
+        logoAlt="ثقة، الصفحة الرئيسية"
         logoHref={logoTo}
         items={cards}
         cta={{ label: 'تسجيل خروج', onClick: () => setConfirming(true) }}

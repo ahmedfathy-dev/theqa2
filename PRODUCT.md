@@ -13,7 +13,7 @@ web
 
 ## Product Purpose
 
-Dar Shadhra's project dashboard gives clients a private place to follow project progress and phases, while the internal team uses a separate workspace to manage that work. Success means users can quickly understand project status and reach the next relevant action.
+Thiqa's project dashboard gives clients a private place to follow project progress and phases, while the internal team uses a separate workspace to manage that work. Success means users can quickly understand project status and reach the next relevant action.
 
 ## Positioning
 
@@ -32,7 +32,7 @@ The product is Arabic-first and RTL. A client's primary task is to understand pr
 
 ## Brand Commitments
 
-- Product identity: Dar Shadhra (دار شذرة), associated with refined home products and a natural, high-end character.
+- Product identity: Thiqa (ثقة), associated with refined home products and a natural, high-end character.
 - Preserve the existing logo and brand name.
 - Use the requested palette: Forest Green `#244B3D`, Deep Green `#173B32`, Teal `#0F766E`, Warm Beige `#D8BE94`, Ivory `#F4F6F2`, White `#FFFFFF`, Primary Text `#172F29`, and Secondary Text `#718078`.
 - Prefer the existing Arabic typeface when it remains suitable.
